@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lobby - Fictio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&amp;family=Rubik:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Pop-Brutalist Utilities */
+        .brutal-shadow {
+            box-shadow: 4px 4px 0px #191b25;
+        }
+        .brutal-shadow-lg {
+            box-shadow: 8px 8px 0px #191b25;
+        }
+        .brutal-interactive:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #191b25;
+        }
+        
+        /* New Animated Background Patterns */
+        .bg-pattern {
+            background-color: #fbf8ff;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(214, 0, 179, 0.03) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(202, 169, 0, 0.03) 0%, transparent 30%),
+                linear-gradient(to bottom right, #fbf8ff, #f3f2ff);
+            background-attachment: fixed;
+        }
+
+        .geometric-decor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.05;
+            border: 2px solid currentColor;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191b25",
+                        "surface-tint": "#004ced",
+                        "tertiary-container": "#caa900",
+                        "secondary": "#ab008f",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0effe",
+                        "on-surface-variant": "#434656",
+                        "secondary-fixed-dim": "#ffade2",
+                        "surface": "#fbf8ff",
+                        "on-primary-fixed-variant": "#0038b6",
+                        "tertiary-fixed": "#ffe170",
+                        "on-tertiary-container": "#4c3f00",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e7",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "primary-container": "#0052ff",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e303a",
+                        "outline-variant": "#c3c5d9",
+                        "on-primary-container": "#dfe3ff",
+                        "surface-container-low": "#f3f2ff",
+                        "background": "#fbf8ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-background": "#191b25",
+                        "surface-variant": "#e1e1ef",
+                        "primary-fixed": "#dde1ff",
+                        "secondary-container": "#d600b3",
+                        "surface-container-highest": "#e1e1ef",
+                        "surface-bright": "#fbf8ff",
+                        "primary": "#003ec7",
+                        "surface-container-high": "#e7e7f5",
+                        "on-tertiary-fixed": "#221b00",
+                        "tertiary": "#705d00",
+                        "on-secondary-fixed": "#3b002f",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#ededfb",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b7c4ff",
+                        "on-primary-fixed": "#001452",
+                        "secondary-fixed": "#ffd8ee",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737688",
+                        "on-secondary-fixed-variant": "#86006f",
+                        "on-secondary-container": "#fffbff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#e9c400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Rubik"],
+                        "label-bold": ["Rubik"],
+                        "headline-md": ["Bricolage Grotesque"],
+                        "headline-sm": ["Bricolage Grotesque"],
+                        "display-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Rubik"],
+                        "display-lg": ["Bricolage Grotesque"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "1", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "1.5", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-pattern text-on-surface font-body-md min-h-screen flex flex-col overflow-x-hidden selection:bg-secondary selection:text-on-secondary">
+<!-- Geometric Background Decoration -->
+<div aria-hidden="true" class="geometric-decor">
+<div class="shape rounded-full text-primary w-24 h-24 top-[10%] left-[5%]"></div>
+<div class="shape rotate-12 text-secondary w-32 h-32 top-[60%] left-[85%]"></div>
+<div class="shape rounded-lg text-tertiary w-16 h-16 top-[20%] left-[80%]"></div>
+<div class="shape rounded-full text-primary w-12 h-12 top-[80%] left-[10%]"></div>
+<div class="shape rotate-45 text-secondary w-20 h-20 top-[40%] left-[90%]"></div>
+<div class="shape rounded-full border-4 border-dotted text-on-surface-variant w-40 h-40 top-[75%] left-[45%]"></div>
+</div>
+<header class="bg-surface/80 backdrop-blur-md dark:bg-surface-container/80 text-primary dark:text-primary-fixed font-headline-md text-headline-md docked full-width top-0 border-b-4 border-on-surface dark:border-outline flat no shadows flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto z-40 relative">
+<div class="flex items-center gap-4">
+<button aria-label="Quitter le salon" class="w-12 h-12 border-4 border-on-surface rounded-full flex items-center justify-center bg-surface-container-high hover:bg-surface-variant transition-colors brutal-interactive">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+<h1 class="font-display-lg text-display-lg-mobile italic uppercase text-primary dark:text-primary-fixed m-0 tracking-tight">Fictio</h1>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="Paramètres" class="w-12 h-12 flex items-center justify-center hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 text-on-surface">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto px-container-margin py-8 flex flex-col gap-12 pb-40 relative z-10">
+<!-- Room Code Section -->
+<section aria-labelledby="room-code-title" class="flex flex-col items-center justify-center w-full">
+<h2 class="sr-only" id="room-code-title">Code du salon</h2>
+<div class="bg-surface-container border-[4px] border-on-surface rounded-xl p-card-padding flex flex-col items-center justify-center brutal-shadow-lg transform rotate-[-1deg] w-full max-w-md relative overflow-hidden">
+<!-- Abstract pattern behind code -->
+<div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle at 2px 2px, black 1px, transparent 0); background-size: 16px 16px;"></div>
+<span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest mb-2 z-10 bg-surface px-4 py-1 border-2 border-on-surface rounded-full">Code du salon</span>
+<div class="flex items-center gap-4 z-10">
+<span class="font-display-lg text-display-lg text-on-surface tracking-tighter">BXZ9-K4L</span>
+<button aria-label="Copier le code" class="w-12 h-12 bg-primary text-on-primary border-[3px] border-on-surface rounded-lg flex items-center justify-center brutal-shadow brutal-interactive transition-all">
+<span class="material-symbols-outlined" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-4 text-center z-10">En attente des autres joueurs...</p>
+</div>
+</section>
+<!-- Players List Section -->
+<section aria-labelledby="players-title" class="w-full flex flex-col gap-6">
+<div class="flex items-center justify-between border-b-4 border-on-surface pb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface" id="players-title">Joueurs <span class="text-primary">(4/8)</span></h2>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+<!-- Player 1 (Host) -->
+<div class="flex flex-col items-center gap-3 relative group">
+<div class="absolute -top-3 -right-3 z-20 w-8 h-8 bg-tertiary-fixed border-[3px] border-on-surface rounded-full flex items-center justify-center brutal-shadow" title="Hôte de la partie">
+<span class="material-symbols-outlined text-[16px]" data-icon="stars" data-weight="fill">stars</span>
+</div>
+<div class="w-24 h-24 rounded-full border-[4px] border-primary brutal-shadow relative overflow-hidden bg-surface-variant">
+<img alt="Avatar du joueur Alex" class="w-full h-full object-cover" data-alt="A stylized, vibrant portrait of a young adult looking directly at the camera, styled with a modern pop-brutalist aesthetic. The lighting is high-key and flat, emphasizing bright, saturated colors against a pure white background. The subject is framed tightly within a circle, matching a bold graphic novel or contemporary sticker-art vibe." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpLvuxF_SA4ErBtG3yxyx-QfG3BdqbAzX_sLGYEytEkZO9OojJwzmhwgClIIDCLDkqGseWRaWiGFlPo7dCqtJkiHMys77xovyyA1ArB6W1KIgyCMICFlR-OnnLNaSJ2XWHO_76lri-CYh737Tjp9AEhTT_tKfO1-DQQ9uebRLzkMW_vmmQicT7yeoKX9FHWw9gW5FsQOTPGkvGAU4XL7yyxYxq2KiSlpU7JX1tNqr8dx-hLHiTMNiRdYOZB5JoONGPdCntP69JJRsf"/>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface bg-surface border-2 border-on-surface px-3 py-1 rounded-full whitespace-nowrap">Alex (Moi)</span>
+</div>
+<!-- Player 2 -->
+<div class="flex flex-col items-center gap-3 relative">
+<div class="w-24 h-24 rounded-full border-[4px] border-secondary brutal-shadow relative overflow-hidden bg-surface-variant">
+<img alt="Avatar du joueur Sam" class="w-full h-full object-cover" data-alt="A striking, energetic portrait of a person with expressive features, captured with flat, bright studio lighting. The image is composed to fit perfectly inside a round avatar frame. The color palette incorporates intense electric blues and vivid pinks, fitting a high-energy multiplayer game aesthetic. Clean lines and minimal background noise." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwFc4EYfSzpCPgNw-feNhdyEC56yM7uDGM7qqcUGCCst0fn2xQHRvAJEiVq4UZvry_PS612yU9vx7LG5C89Qa3jw4o3tTut6psP66_ePg38mvgxKcGIEMvM1HBpiw7UAzMXpHczgzan5L4MrKsYwUKA3FA3alBsf6bLi07EJI5ZrzE6_LgYoOVfmyHzXHNhxhhesNUJ2ImW92Y3ZXiylRk37HmkWiT4uJOOAdZlzGI-7uoIWbO0FSVrGh8nNjdoR5QtoUUVd-dpmX8"/>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface">Sam</span>
+</div>
+<!-- Player 3 -->
+<div class="flex flex-col items-center gap-3 relative">
+<div class="w-24 h-24 rounded-full border-[4px] border-[#00c853] brutal-shadow relative overflow-hidden bg-surface-variant">
+<img alt="Avatar du joueur Jordan" class="w-full h-full object-cover" data-alt="A close-up, lively portrait of a smiling individual with vibrant styling, suitable for a playful video game profile. The subject is well-lit with harsh, direct light creating crisp shadows, adhering to a pop-brutalist visual style. Set against a neutral background to ensure the player's assigned neon green aura border pops aggressively." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj8EyszE9mL_VNpcd1KvNK5mRkbWt9K4-6-H0BevbgkleAyON4WaqKg2vJuTPDbuz8O8r0mzmZgUNHlGQwmflXDBtGrNIIRI2LDoiY7szuLkv-in6VBF8JmBCAR3rzM4lBJ4w328J8uHkrsGuni19PbXAhKhs-Nh_Dm_yjW7kO6uM3CWzcq4vH415Vr_OV4XbYeIGc-aMT1MC7X0CPwm25lchakXp-5lzytsCl4TquWO-NygnhVKc0KkDX1ojNDl3m0WsU-wL3LWeK"/>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface">Jordan</span>
+</div>
+<!-- Player 4 -->
+<div class="flex flex-col items-center gap-3 relative">
+<div class="w-24 h-24 rounded-full border-[4px] border-[#ff3d00] brutal-shadow relative overflow-hidden bg-surface-variant">
+<img alt="Avatar du joueur Taylor" class="w-full h-full object-cover" data-alt="A bold, stylized headshot of a confident young person wearing contemporary streetwear. The lighting is ultra-bright and clean, removing soft gradients in favor of a punchy, graphic aesthetic. Intended for a circular mask, the image heavily features high contrast to harmonize with thick black outlines and vibrant brand colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGn6Jo7pHh3Fvu1fAgaGUGIx3kLbBYEtZUrnr9ifPh7lvzzt-YVZpndEhk-2TkoCzaA3ddqJdqXc6ZZqsjtfUEdqC9c5ZwR9clk3FM2aIL7uRzdDcEEFS2DUK85ZZ8W83JVjKnOtwzmf-u-b3AePmpXHkX4tXrw_TMazdXqAAWK8JI3gGmHcLu8PiQBsswMJBLHDhLmSmUjJC9DE7bOiLwMW5CNKhQ1G8cRpJARPx8EGJQ2KVDN2HoyDLxGAIGDOapjPvf7JNCf9kg"/>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface">Taylor</span>
+</div>
+<!-- Empty Slots -->
+<div class="flex flex-col items-center gap-3 opacity-50 border-on-surface border-dashed">
+<div class="w-24 h-24 rounded-full border-[4px] border-dashed border-on-surface-variant bg-surface-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl" data-icon="person_add">person_add</span>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Inviter</span>
+</div>
+<div class="flex flex-col items-center gap-3 opacity-50 border-on-surface border-dashed">
+<div class="w-24 h-24 rounded-full border-[4px] border-dashed border-on-surface-variant bg-surface-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-4xl" data-icon="person_add">person_add</span>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface-variant">Inviter</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom Action (Host Only) -->
+<div class="fixed bottom-0 left-0 w-full p-container-margin bg-gradient-to-t from-surface-container via-surface-container-low/90 to-transparent z-50 flex justify-center pointer-events-none">
+<!-- The button itself has pointer events enabled -->
+<button class="pointer-events-auto w-full max-w-lg bg-tertiary-fixed text-on-surface border-[4px] border-on-surface rounded-xl px-8 py-6 font-display-lg-mobile text-display-lg-mobile uppercase tracking-tight flex items-center justify-center gap-4 brutal-shadow-lg brutal-interactive transition-all group overflow-hidden relative">
+<!-- Animated background effect on hover -->
+<div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"></div>
+<span class="relative z-10">Lancer la partie</span>
+<span class="material-symbols-outlined text-4xl relative z-10 group-hover:translate-x-2 transition-transform" data-icon="play_arrow" data-weight="fill">play_arrow</span>
+</button>
+</div>
+</body></html>

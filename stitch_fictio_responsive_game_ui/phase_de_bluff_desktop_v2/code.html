@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fictio - Phase de Bluff</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&amp;family=Rubik:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191b25",
+                        "surface-tint": "#004ced",
+                        "tertiary-container": "#caa900",
+                        "secondary": "#ab008f",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0effe",
+                        "on-surface-variant": "#434656",
+                        "secondary-fixed-dim": "#ffade2",
+                        "surface": "#fbf8ff",
+                        "on-primary-fixed-variant": "#0038b6",
+                        "tertiary-fixed": "#ffe170",
+                        "on-tertiary-container": "#4c3f00",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e7",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "primary-container": "#0052ff",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e303a",
+                        "outline-variant": "#c3c5d9",
+                        "on-primary-container": "#dfe3ff",
+                        "surface-container-low": "#f3f2ff",
+                        "background": "#fbf8ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-background": "#191b25",
+                        "surface-variant": "#e1e1ef",
+                        "primary-fixed": "#dde1ff",
+                        "secondary-container": "#d600b3",
+                        "surface-container-highest": "#e1e1ef",
+                        "surface-bright": "#fbf8ff",
+                        "primary": "#003ec7",
+                        "surface-container-high": "#e7e7f5",
+                        "on-tertiary-fixed": "#221b00",
+                        "tertiary": "#705d00",
+                        "on-secondary-fixed": "#3b002f",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#ededfb",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b7c4ff",
+                        "on-primary-fixed": "#001452",
+                        "secondary-fixed": "#ffd8ee",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737688",
+                        "on-secondary-fixed-variant": "#86006f",
+                        "on-secondary-container": "#fffbff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#e9c400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Rubik"],
+                        "label-bold": ["Rubik"],
+                        "headline-md": ["Bricolage Grotesque"],
+                        "headline-sm": ["Bricolage Grotesque"],
+                        "display-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Rubik"],
+                        "display-lg": ["Bricolage Grotesque"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "1", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "1.5", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Brutalist Shadows & Utilities */
+        .brutalist-shadow {
+            box-shadow: 4px 4px 0px 0px #191b25;
+        }
+        .brutalist-shadow-lg {
+            box-shadow: 8px 8px 0px 0px #191b25;
+        }
+        .brutalist-border {
+            border: 3px solid #191b25;
+        }
+        .brutalist-btn-active:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #191b25;
+        }
+        
+        /* Input Focus Ring Customization */
+        .brutalist-input:focus {
+            outline: none;
+            border-color: #003ec7; /* primary */
+            background-color: #fbf8ff; /* surface */
+        }
+
+        /* Sophisticated Animated Background Pattern */
+        .bg-pattern {
+            background: linear-gradient(135deg, #fbf8ff 0%, #ededfb 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .bg-pattern::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 82, 255, 0.03) 0%, transparent 10%),
+                radial-gradient(circle at 90% 80%, rgba(171, 0, 143, 0.03) 0%, transparent 10%),
+                radial-gradient(circle at 50% 50%, rgba(202, 169, 0, 0.03) 0%, transparent 15%);
+            background-size: 100% 100%;
+        }
+        
+        /* Geometric floating shapes */
+        .shape {
+            position: fixed;
+            z-index: 0;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        .shape-circle { border-radius: 50%; border: 2px solid currentColor; }
+        .shape-square { border: 2px solid currentColor; transform: rotate(15deg); }
+        .shape-dot { background: currentColor; border-radius: 50%; }
+    </style>
+</head>
+<body class="bg-pattern text-on-background font-body-md min-h-screen flex flex-col relative pb-[100px] md:pb-0">
+<!-- Floating Background Shapes -->
+<div class="shape shape-circle text-primary w-24 h-24 top-20 left-[5%] hidden md:block"></div>
+<div class="shape shape-square text-secondary w-16 h-16 top-[60%] left-[2%] hidden md:block"></div>
+<div class="shape shape-dot text-tertiary w-4 h-4 top-[15%] left-[45%] hidden md:block"></div>
+<div class="shape shape-circle text-secondary w-32 h-32 top-[40%] right-[5%] hidden md:block"></div>
+<div class="shape shape-square text-primary w-20 h-20 top-[10%] right-[10%] hidden md:block"></div>
+<div class="shape shape-dot text-secondary w-6 h-6 top-[80%] right-[15%] hidden md:block"></div>
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-md dark:bg-surface-container/80 docked full-width top-0 border-b-4 border-on-surface dark:border-outline flat no shadows flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto z-40 relative hidden md:flex">
+<div class="flex items-center gap-4">
+<h1 class="font-display-lg text-display-lg-mobile italic uppercase text-primary dark:text-primary-fixed">Fictio</h1>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="settings" class="p-2 brutalist-border rounded-full hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 bg-surface">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button aria-label="help" class="p-2 brutalist-border rounded-full hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 bg-surface">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-10 h-10 rounded-full brutalist-border overflow-hidden ml-2">
+<img alt="Player Profile" class="w-full h-full object-cover" data-alt="A close up portrait photo of a young woman with a vibrant, energetic expression. She is set against a clean white background with harsh, pop-art style lighting that creates strong contrasts. The image has a hyper-modern, high-key light mode aesthetic consistent with a Gen-Z multiplayer game profile picture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAa3TkKO0BpEGnpMAUfr05U177C0kuMwek6e-rd0tJ6Pho_9yx3irsU3xfrdQ4VsGgv3D_hLzUgZowmoLn3VnfxikEGAz1vqRyzy5frcrgR02Dx9_HH3m4KYjlc9yCl5Ievg1mGVVAqyi60e3oZhLm4MGwu0IPBHLTF2pAV0kOEZEzvQmDTEsn7E5u1syIyP5aXJBEV9rB2fzqtCL7Mm4g5m5YSEIyfovwaZrGVvY2W7xDGGzclE0am31P-V86Up7veHc90WANdxbT0"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center px-gutter pt-8 md:pt-12 max-w-4xl mx-auto w-full relative z-10">
+<!-- Status Header -->
+<div class="w-full flex justify-between items-center mb-8">
+<div class="bg-surface-variant text-on-surface-variant font-label-bold text-label-bold px-4 py-2 rounded-full brutalist-border uppercase tracking-widest">
+                Phase de Bluff
+            </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="timer">timer</span>
+<span class="font-headline-sm text-headline-sm text-secondary">00:45</span>
+</div>
+</div>
+<!-- The Mystery Word Area -->
+<div class="w-full bg-surface brutalist-border brutalist-shadow-lg rounded-xl p-card-padding flex flex-col items-center justify-center text-center mb-10 relative overflow-hidden">
+<!-- Decorative accent behind text -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary rounded-full mix-blend-multiply opacity-20 blur-2xl"></div>
+<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-secondary rounded-full mix-blend-multiply opacity-20 blur-2xl"></div>
+<h2 class="font-label-bold text-label-bold text-on-surface-variant uppercase mb-4 tracking-widest">Le mot mystère est :</h2>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary break-all mb-4 relative z-10">
+                PANTAGRUÉLIQUE
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface max-w-lg relative z-10">
+                Personne ne connaît ce mot. Invente la définition la plus crédible pour piéger tes amis.
+            </p>
+</div>
+<!-- Definition Input Area -->
+<div class="w-full max-w-2xl flex flex-col gap-6">
+<div class="relative w-full">
+<label class="sr-only" for="definition">Ta définition</label>
+<textarea class="w-full brutalist-input brutalist-border brutalist-shadow rounded-xl p-4 font-body-lg text-body-lg text-on-surface bg-surface-container-lowest resize-none transition-colors duration-200" id="definition" placeholder="Ex: Qualifie un instrument de musique médiéval à vent..." rows="4"></textarea>
+<!-- Character count / Hint -->
+<div class="absolute bottom-4 right-4 font-label-bold text-label-bold text-on-surface-variant">
+                    Sois convaincant !
+                </div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-secondary text-on-secondary font-headline-sm text-headline-sm py-4 px-6 rounded-xl brutalist-border brutalist-shadow brutalist-btn-active transition-all duration-100 flex justify-center items-center gap-3">
+<span>Soumettre</span>
+<span class="material-symbols-outlined icon-fill" data-icon="send">send</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="bg-surface dark:bg-surface-container-high fixed bottom-0 w-full z-50 rounded-t-lg border-t-4 border-on-surface dark:border-outline flat no shadows flex justify-around items-center px-4 py-3 md:hidden">
+<!-- Tab: Jouer (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary dark:bg-secondary-container text-on-secondary dark:text-on-secondary-container rounded-xl p-2 border-2 border-on-surface active:scale-95 transition-transform duration-100 w-[72px]" href="#">
+<span class="material-symbols-outlined icon-fill" data-icon="videogame_asset">videogame_asset</span>
+<span class="font-label-bold text-label-bold text-[10px] mt-1">Jouer</span>
+</a>
+<!-- Tab: Amis -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 duration-100 w-[72px] rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-bold text-label-bold text-[10px] mt-1">Amis</span>
+</a>
+<!-- Tab: Classement -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 duration-100 w-[72px] rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold text-label-bold text-[10px] mt-1">Classement</span>
+</a>
+<!-- Tab: Profil -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 duration-100 w-[72px] rounded-xl" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-label-bold text-label-bold text-[10px] mt-1">Profil</span>
+</a>
+</nav>
+</body></html>

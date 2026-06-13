@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fictio - Phase de Vote</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&amp;family=Rubik:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "on-surface": "#191b25",
+                        "surface-tint": "#004ced",
+                        "tertiary-container": "#caa900",
+                        "secondary": "#ab008f",
+                        "on-secondary": "#ffffff",
+                        "inverse-on-surface": "#f0effe",
+                        "on-surface-variant": "#434656",
+                        "secondary-fixed-dim": "#ffade2",
+                        "surface": "#fbf8ff",
+                        "on-primary-fixed-variant": "#0038b6",
+                        "tertiary-fixed": "#ffe170",
+                        "on-tertiary-container": "#4c3f00",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#d9d9e7",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "primary-container": "#0052ff",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e303a",
+                        "outline-variant": "#c3c5d9",
+                        "on-primary-container": "#dfe3ff",
+                        "surface-container-low": "#f3f2ff",
+                        "background": "#fbf8ff",
+                        "primary-fixed-dim": "#b7c4ff",
+                        "on-background": "#191b25",
+                        "surface-variant": "#e1e1ef",
+                        "primary-fixed": "#dde1ff",
+                        "secondary-container": "#d600b3",
+                        "surface-container-highest": "#e1e1ef",
+                        "surface-bright": "#fbf8ff",
+                        "primary": "#003ec7",
+                        "surface-container-high": "#e7e7f5",
+                        "on-tertiary-fixed": "#221b00",
+                        "tertiary": "#705d00",
+                        "on-secondary-fixed": "#3b002f",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#ededfb",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b7c4ff",
+                        "on-primary-fixed": "#001452",
+                        "secondary-fixed": "#ffd8ee",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#737688",
+                        "on-secondary-fixed-variant": "#86006f",
+                        "on-secondary-container": "#fffbff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#e9c400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "card-padding": "20px",
+                        "container-margin": "24px",
+                        "touch-target-min": "48px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Rubik"],
+                        "label-bold": ["Rubik"],
+                        "headline-md": ["Bricolage Grotesque"],
+                        "headline-sm": ["Bricolage Grotesque"],
+                        "display-lg-mobile": ["Bricolage Grotesque"],
+                        "body-lg": ["Rubik"],
+                        "display-lg": ["Bricolage Grotesque"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-bold": ["14px", { "lineHeight": "1", "fontWeight": "700" }],
+                        "headline-md": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-sm": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "display-lg-mobile": ["36px", { "lineHeight": "1.1", "fontWeight": "800" }],
+                        "body-lg": ["20px", { "lineHeight": "1.5", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf8ff; /* surface fallback */
+            color: #191b25; /* on-surface */
+            overflow-x: hidden;
+            background: radial-gradient(circle at 10% 20%, rgba(0, 76, 237, 0.03) 0%, transparent 20%),
+                        radial-gradient(circle at 90% 80%, rgba(171, 0, 143, 0.03) 0%, transparent 20%),
+                        radial-gradient(circle at 50% 50%, rgba(202, 169, 0, 0.03) 0%, transparent 25%),
+                        linear-gradient(135deg, #f3f4f9 0%, #ffffff 100%);
+            background-attachment: fixed;
+        }
+
+        /* Decorative Background Shapes */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-shape {
+            position: absolute;
+            opacity: 0.05;
+        }
+        
+        .brutalist-card {
+            border: 3px solid #191b25;
+            background-color: #ffffff;
+            transition: transform 0.1s ease-out, border-color 0.2s;
+            position: relative;
+        }
+
+        .brutalist-card::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 100%;
+            height: 100%;
+            background-color: #191b25;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        .brutalist-card:hover {
+            transform: translate(2px, 2px);
+        }
+        
+        .brutalist-card:active {
+            transform: translate(4px, 4px);
+        }
+
+        .brutalist-card.selected {
+            border-color: #ab008f; /* secondary (neon pink) */
+            transform: scale(1.05) translate(0, 0) !important;
+        }
+        
+        .brutalist-card.selected::after {
+            background-color: #ab008f;
+        }
+
+        .brutalist-button {
+            border: 3px solid #191b25;
+            position: relative;
+            transition: transform 0.1s ease-out;
+            min-height: 64px;
+        }
+
+        .brutalist-button::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 100%;
+            height: 100%;
+            background-color: #191b25;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        .brutalist-button:active {
+            transform: translate(4px, 4px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-md">
+<!-- Decorative background elements -->
+<div class="bg-pattern hidden md:block">
+<div class="bg-shape rounded-full bg-primary w-64 h-64 -top-20 -left-20"></div>
+<div class="bg-shape bg-secondary w-32 h-32 top-1/4 right-10 rotate-12"></div>
+<div class="bg-shape rounded-full bg-tertiary w-48 h-48 bottom-1/4 left-1/4"></div>
+<div class="bg-shape bg-surface-tint w-16 h-16 top-1/2 right-1/3 rounded-full"></div>
+<div class="bg-shape bg-primary w-8 h-8 top-20 right-1/4 rotate-45"></div>
+<div class="bg-shape rounded-full bg-secondary w-24 h-24 bottom-10 right-20"></div>
+<!-- Dots pattern -->
+<div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(#191b25 1px, transparent 1px); background-size: 40px 40px;"></div>
+</div>
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-md dark:bg-surface-container/90 flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto docked full-width top-0 border-b-4 border-on-surface dark:border-outline flat no shadows z-50">
+<div class="font-display-lg text-display-lg-mobile italic uppercase text-primary dark:text-primary-fixed">Fictio</div>
+<div class="flex items-center gap-4 hidden md:flex">
+<nav class="flex gap-6">
+<a class="text-primary font-bold hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all" href="#">Jouer</a>
+<a class="text-on-surface-variant hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all" href="#">Amis</a>
+<a class="text-on-surface-variant hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all" href="#">Classement</a>
+<a class="text-on-surface-variant hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all" href="#">Profil</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="hover:translate-x-1 hover:translate-y-1 transition-transform active:translate-x-1 active:translate-y-1 transition-all text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<div class="w-10 h-10 rounded-full border-2 border-on-surface overflow-hidden bg-surface-variant">
+<img alt="Player Profile" class="w-full h-full object-cover" data-alt="A close-up portrait of a young person looking directly at the camera. The lighting is bright and modern, creating a fresh and energetic mood. The aesthetic is clean and vibrant, fitting a light-mode Pop-Brutalist design. The background is simple and unobtrusive, allowing the subject's expression to stand out." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqCmTtp3bWuolOIwk9A5sMtVNmMrYmwBi1xOuikVepNIVSZF9vyMV8fIogEwbjA-F8irV1zZwM51wo8i_0JT7nD8brRR5F0hyBkVBK42altvT7_OJ8ko8k_3aVqwwcEEZXs2mcBEi4cOb3t5_XiwqzqKDwreXSPB9tAdTAEB2cROB-3ioLD0gyErrBsi2HIdIXlinaE5IT-7Ou5F_B09U0VxsYSVhJgaAGQgkspzMaQxXqOc48-bLYJlyEbh9mkV47kgBZkUnTAw0R"/>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-start pt-8 pb-32 px-container-margin w-full max-w-7xl mx-auto relative z-10">
+<div class="text-center mb-10 w-full">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-2">Quel est le vrai mot ?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Votez pour la définition qui vous semble correcte.</p>
+<div class="mt-6 inline-flex items-center gap-2 bg-tertiary-fixed text-on-tertiary-fixed px-6 py-3 rounded-full border-3 border-on-surface brutalist-card font-label-bold text-label-bold">
+<span class="material-symbols-outlined animate-pulse">timer</span>
+<span>Temps restant: 15s</span>
+</div>
+</div>
+<!-- Voting Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl" id="voting-grid">
+<!-- Card 1 -->
+<button class="brutalist-card rounded-xl p-card-padding text-left flex flex-col h-full bg-surface" onclick="selectCard(this)">
+<span class="font-label-bold text-label-bold text-primary mb-2 uppercase tracking-wide">Définition 1</span>
+<p class="font-body-lg text-body-lg text-on-surface flex-grow">Un instrument de musique traditionnel originaire des Andes, fabriqué en bois de cactus et doté de trois cordes.</p>
+</button>
+<!-- Card 2 -->
+<button class="brutalist-card rounded-xl p-card-padding text-left flex flex-col h-full bg-surface" onclick="selectCard(this)">
+<span class="font-label-bold text-label-bold text-secondary mb-2 uppercase tracking-wide">Définition 2</span>
+<p class="font-body-lg text-body-lg text-on-surface flex-grow">Une petite créature mythologique censée voler les chaussettes gauches dans les tiroirs pendant la nuit.</p>
+</button>
+<!-- Card 3 -->
+<button class="brutalist-card rounded-xl p-card-padding text-left flex flex-col h-full bg-surface" onclick="selectCard(this)">
+<span class="font-label-bold text-label-bold text-surface-tint mb-2 uppercase tracking-wide">Définition 3</span>
+<p class="font-body-lg text-body-lg text-on-surface flex-grow">L'action de regarder fixement dans le vide tout en prétendant écouter attentivement une conversation.</p>
+</button>
+<!-- Card 4 -->
+<button class="brutalist-card rounded-xl p-card-padding text-left flex flex-col h-full bg-surface" onclick="selectCard(this)">
+<span class="font-label-bold text-label-bold text-tertiary mb-2 uppercase tracking-wide">Définition 4</span>
+<p class="font-body-lg text-body-lg text-on-surface flex-grow">Un type de nuage rare qui se forme uniquement au-dessus des montagnes volcaniques actives.</p>
+</button>
+</div>
+<div class="mt-12 w-full max-w-md">
+<button class="brutalist-button w-full bg-secondary text-on-secondary rounded-lg font-headline-sm text-headline-sm flex items-center justify-center gap-2" disabled="" id="valider-btn">
+<span class="material-symbols-outlined">how_to_vote</span>
+                Valider mon vote
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface/90 backdrop-blur-md dark:bg-surface-container-high fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 border-t-4 border-on-surface dark:border-outline rounded-t-lg">
+<a class="flex flex-col items-center justify-center bg-secondary dark:bg-secondary-container text-on-secondary dark:text-on-secondary-container rounded-xl p-2 border-2 border-on-surface active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="videogame_asset" style="font-variation-settings: 'FILL' 1;">videogame_asset</span>
+<span class="font-label-bold text-label-bold mt-1">Jouer</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-bold text-label-bold mt-1">Amis</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="emoji_events">emoji_events</span>
+<span class="font-label-bold text-label-bold mt-1">Classement</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-secondary-container dark:hover:bg-secondary transition-colors active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-label-bold text-label-bold mt-1">Profil</span>
+</a>
+</nav>
+<script>
+        function selectCard(clickedCard) {
+            // Remove 'selected' class from all cards
+            const cards = document.querySelectorAll('#voting-grid button');
+            cards.forEach(card => card.classList.remove('selected'));
+
+            // Add 'selected' class to the clicked card
+            clickedCard.classList.add('selected');
+
+            // Enable validation button
+            const validerBtn = document.getElementById('valider-btn');
+            validerBtn.removeAttribute('disabled');
+            validerBtn.classList.add('animate-pulse'); // Just to draw attention
+            setTimeout(() => { validerBtn.classList.remove('animate-pulse') }, 1000);
+        }
+    </script>
+</body></html>
