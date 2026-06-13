@@ -14,7 +14,7 @@ const roomCode = (route.query.room as string || '').toUpperCase();
 const pseudo = localStorage.getItem('pseudo') || 'Anonyme';
 
 // Local Player ID
-let myId = localStorage.getItem('playerId');
+let myId: string = localStorage.getItem('playerId') || '';
 if (!myId) {
   myId = generateId() + generateId();
   localStorage.setItem('playerId', myId);

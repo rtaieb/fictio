@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { db } from '@/firebase';
-import { doc, getDoc, onSnapshot, updateDoc, collection } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, collection } from 'firebase/firestore';
 import type { Room, Player } from '@/types';
 
 const route = useRoute();
