@@ -17,6 +17,8 @@ async function runTests() {
       console.log(`Player ${i} joining...`);
       const context = await browser.createBrowserContext();
       const page = await context.newPage();
+      page.on('console', msg => console.log(`PAGE ${i} LOG:`, msg.text()));
+      page.on('pageerror', err => console.log(`PAGE ${i} ERROR:`, err.toString()));
       pages.push(page);
       
       // Navigate
@@ -45,18 +47,29 @@ async function runTests() {
     // find the button that contains "Lancer la partie"
     await hostPage.evaluate(() => {
         const btns = document.querySelectorAll('button');
-        for (let b of btns) {
-            if (b.innerText.includes('Lancer la partie')) b.click();
-        }
+          for (let b of btns) {
+              if (b.innerText.toUpperCase().includes('LANCER LA PARTIE')) b.click();
+          }
     });
     
     // Everyone should see GameView (Phase de Bluff)
     for(let page of pages) {
       await page.waitForFunction(() => document.body.innerText.includes('Phase de Bluff'), {timeout: 10000});
+      
+      // Type a bluff and click Soumettre
+      await page.type('textarea', 'Ceci est mon bluff ' + Math.random());
+      await page.evaluate(() => {
+          const btns = document.querySelectorAll('button');
+          for (let b of btns) {
+              if (b.innerText.toUpperCase().includes('SOUMETTRE')) b.click();
+          }
+      });
+      // Verify it changes state to 'En attente des autres joueurs...'
+      await page.waitForFunction(() => document.body.innerText.includes('En attente des autres joueurs'), {timeout: 5000});
     }
-    console.log("Game started successfully!");
+    console.log("All players submitted their bluff successfully!");
 
-    console.log("Test Passed! Basic flow works.");
+    console.log("Test Passed! Basic flow and submission works.");
 
   } catch (error) {
     console.error("TEST FAILED:", error);

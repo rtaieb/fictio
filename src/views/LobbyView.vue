@@ -116,8 +116,12 @@ onUnmounted(() => {
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribePlayers) unsubscribePlayers();
   window.removeEventListener('beforeunload', handleDisconnect);
-  handleDisconnect();
 });
+
+const quitLobby = () => {
+  handleDisconnect();
+  router.push('/');
+};
 
 const copyCode = () => {
   navigator.clipboard.writeText(roomCode);
@@ -125,7 +129,8 @@ const copyCode = () => {
 };
 
 const copyLink = () => {
-  const url = window.location.origin + window.location.pathname + '?room=' + roomCode;
+  // Fix URL to point to home with hash routing if needed, or query params
+  const url = window.location.origin + window.location.pathname + '#/?room=' + roomCode;
   navigator.clipboard.writeText(url);
   showToast("Lien copié !");
 };
@@ -181,7 +186,7 @@ const updateSettings = async () => {
 
     <header class="bg-surface/80 backdrop-blur-md text-primary font-headline-md text-headline-md border-b-4 border-on-surface flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto z-40 relative">
       <div class="flex items-center gap-4">
-        <button @click="router.push('/')" aria-label="Quitter" class="w-12 h-12 border-4 border-on-surface rounded-full flex items-center justify-center bg-surface-container-high hover:bg-surface-variant transition-colors brutal-interactive">
+        <button @click="quitLobby" aria-label="Quitter" class="w-12 h-12 border-4 border-on-surface rounded-full flex items-center justify-center bg-surface-container-high hover:bg-surface-variant transition-colors brutal-interactive">
           <span class="material-symbols-outlined">close</span>
         </button>
         <img src="@/assets/logo.svg" alt="Fictio Logo" class="h-10 w-auto" />
