@@ -38,8 +38,9 @@ const checkFastForward = () => {
     }
     
     if (room.value.phase === 'voting' && players.value.length > 0 && players.value.every(p => p.hasVoted)) {
-        if (timeRemaining.value > 0 && !isTransitioning) {
-            handleTimerEnd();
+        const newEndsAt = Date.now() + 3500; // 3 seconds countdown
+        if (room.value.phaseEndsAt && room.value.phaseEndsAt > newEndsAt) {
+            updateDoc(doc(db, 'rooms', roomCode), { phaseEndsAt: newEndsAt });
         }
     }
 };
@@ -114,8 +115,7 @@ onMounted(async () => {
       
       if (timeRemaining.value === 0) {
         if (room.value.phase === 'bluffing' && myPlayer.value && !myPlayer.value.hasSubmitted) {
-            bluffText.value = bluffText.value.trim() || 'Pas d\'idée !';
-            submitBluff();
+            submitBluff(true);
         }
         if (isHost.value) {
             handleTimerEnd();
@@ -142,8 +142,17 @@ const quitGame = () => {
     router.push('/');
 };
 
-const submitBluff = async () => {
-    if (!bluffText.value.trim() || myPlayer.value?.hasSubmitted) return;
+const submitBluff = async (autoSubmit: boolean = false) => {
+    if (!autoSubmit && !bluffText.value.trim()) return;
+    if (myPlayer.value?.hasSubmitted) return;
+    
+    let textToSubmit = bluffText.value.trim();
+    let isEmpty = false;
+    
+    if (autoSubmit && !textToSubmit) {
+        textToSubmit = `${myPlayer.value?.name || 'Le joueur'} n'a rien écrit 😴`;
+        isEmpty = true;
+    }
     
     const roomRef = doc(db, 'rooms', roomCode);
     const pRef = doc(db, `rooms/${roomCode}/players`, myId!);
@@ -155,23 +164,22 @@ const submitBluff = async () => {
     batch.update(roomRef, { 
         propositions: [...currentProps, {
             playerId: myId!,
-            text: bluffText.value.trim(),
-            voters: []
+            text: textToSubmit,
+            voters: [],
+            isEmpty: isEmpty
         }]
     });
     
     await batch.commit();
 };
 
-const submitVote = async () => {
-    if (selectedPropositionIndex.value === null || myPlayer.value?.hasVoted) return;
+const submitVote = async (index: number) => {
+    if (myPlayer.value?.hasVoted) return;
     
-    const prop = shuffledPropositions.value[selectedPropositionIndex.value];
-    // Cannot vote for own bluff
-    if (prop.playerId === myId) {
-        alert("Tu ne peux pas voter pour ton propre bluff !");
-        return;
-    }
+    const prop = shuffledPropositions.value[index];
+    if (prop.playerId === myId || prop.isEmpty) return;
+    
+    selectedPropositionIndex.value = index;
     
     const roomRef = doc(db, 'rooms', roomCode);
     const pRef = doc(db, `rooms/${roomCode}/players`, myId!);
@@ -345,24 +353,27 @@ const nextRound = async () => {
             <p class="font-body-lg text-on-surface-variant">Votez pour la réponse qui vous semble correcte.</p>
           </div>
 
-          <div v-if="!myPlayer?.hasVoted" class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
               <button 
                 v-for="(prop, index) in shuffledPropositions" 
                 :key="index"
-                @click="selectedPropositionIndex = index"
-                :class="['border-4 border-on-surface rounded-xl p-4 text-left flex flex-col bg-surface transition-transform hover:translate-y-[-2px]', selectedPropositionIndex === index ? 'border-secondary shadow-[0_0_0_4px_#ab008f]' : 'brutal-shadow']"
+                @click="submitVote(index)"
+                :disabled="prop.playerId === myId || prop.isEmpty || myPlayer?.hasVoted"
+                :class="[
+                   'border-4 border-on-surface rounded-xl p-4 text-left flex flex-col transition-all duration-300', 
+                   selectedPropositionIndex === index ? 'border-secondary shadow-[0_0_0_4px_#ab008f] scale-[1.02] bg-secondary' : 'bg-surface brutal-shadow',
+                   !myPlayer?.hasVoted && prop.playerId !== myId && !prop.isEmpty ? 'hover:translate-y-[-2px] hover:shadow-[0_0_0_4px_#ab008f]' : '',
+                   (prop.playerId === myId || prop.isEmpty) ? 'opacity-50 cursor-not-allowed filter grayscale' : '',
+                   myPlayer?.hasVoted && selectedPropositionIndex !== index ? 'opacity-50' : ''
+                ]"
               >
-                 <p class="font-body-lg text-on-surface flex-grow">{{ prop.text }}</p>
+                 <p class="font-body-lg flex-grow" :class="selectedPropositionIndex === index ? 'text-white' : 'text-on-surface'">{{ prop.text }}</p>
+                 <span v-if="prop.playerId === myId" class="text-xs font-label-bold mt-2 opacity-70" :class="selectedPropositionIndex === index ? 'text-white' : 'text-on-surface'">Ton bluff</span>
+                 <span v-if="prop.isEmpty" class="text-xs font-label-bold mt-2 opacity-70 text-on-surface">Vote impossible</span>
               </button>
           </div>
-          <div v-else class="text-center font-headline-sm text-on-surface-variant animate-pulse">
+          <div v-if="myPlayer?.hasVoted" class="text-center font-headline-sm text-on-surface-variant animate-pulse mt-8">
               Vote enregistré ! En attente...
-          </div>
-
-          <div v-if="!myPlayer?.hasVoted" class="mt-8 w-full max-w-md">
-              <button @click="submitVote" :disabled="selectedPropositionIndex === null" class="w-full btn-brutal bg-secondary text-on-secondary rounded-lg font-headline-sm py-4 flex items-center justify-center gap-2">
-                 <span class="material-symbols-outlined">how_to_vote</span> Valider
-              </button>
           </div>
       </div>
 
@@ -409,7 +420,7 @@ const nextRound = async () => {
 
           <div v-if="isHost" class="mt-8 w-full max-w-md">
               <button @click="nextRound" class="w-full btn-brutal bg-tertiary-fixed text-on-surface rounded-lg font-headline-sm py-4">
-                  Tour Suivant
+                  {{ room.currentRound >= room.maxRounds ? 'Voir le podium' : 'Tour Suivant' }}
               </button>
           </div>
           <div v-else class="mt-8 animate-pulse text-on-surface-variant font-label-bold">

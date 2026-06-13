@@ -8,10 +8,11 @@ export type Player = {
   avatarColor?: string; // e.g. bg-primary, bg-secondary
 };
 
-export type Proposition = {
-  playerId: string; // 'true_answer' for the real one
+export interface Proposition {
+  playerId: string; // ID du joueur ou 'true_answer'
   text: string;
-  voters: string[]; // array of playerIds
+  voters: string[]; // Liste des IDs de joueurs ayant voté pour cette prop
+  isEmpty?: boolean;
 };
 
 export type Room = {
