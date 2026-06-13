@@ -336,7 +336,7 @@ const nextRound = async () => {
           <div class="relative w-full">
             <textarea v-model="bluffText" class="w-full input-brutal rounded-xl p-4 font-body-lg" rows="3" placeholder="Tape ton bluff ici..."></textarea>
           </div>
-          <button @click="submitBluff" class="w-full btn-brutal bg-secondary text-on-secondary font-headline-sm py-4 rounded-xl flex justify-center items-center gap-3">
+          <button @click="submitBluff(false)" class="w-full btn-brutal bg-secondary text-on-secondary font-headline-sm py-4 rounded-xl flex justify-center items-center gap-3">
             <span>Soumettre</span>
             <span class="material-symbols-outlined">send</span>
           </button>
