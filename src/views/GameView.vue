@@ -238,7 +238,7 @@ const nextRound = async () => {
 
     <!-- Top AppBar -->
     <header class="bg-surface/90 backdrop-blur-md flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto border-b-4 border-on-surface z-50">
-      <div class="font-display-lg text-display-lg-mobile italic uppercase text-primary">Fictio</div>
+      <img src="@/assets/logo.svg" alt="Fictio Logo" class="h-10 w-auto" />
       <div class="flex items-center gap-4">
         <span class="font-label-bold">Tour {{ room.currentRound }} / {{ room.maxRounds }}</span>
         <button @click="router.push('/lobby?room=' + roomCode)" class="w-10 h-10 border-2 border-on-surface rounded-full flex items-center justify-center bg-surface-variant hover:bg-surface-dim">

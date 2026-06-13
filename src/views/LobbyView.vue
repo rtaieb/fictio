@@ -159,7 +159,7 @@ const updateSettings = async () => {
         <button @click="router.push('/')" aria-label="Quitter" class="w-12 h-12 border-4 border-on-surface rounded-full flex items-center justify-center bg-surface-container-high hover:bg-surface-variant transition-colors brutal-interactive">
           <span class="material-symbols-outlined">close</span>
         </button>
-        <h1 class="font-display-lg text-display-lg-mobile italic uppercase text-primary tracking-tight">Fictio</h1>
+        <img src="@/assets/logo.svg" alt="Fictio Logo" class="h-10 w-auto" />
       </div>
     </header>
 

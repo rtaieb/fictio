@@ -127,7 +127,7 @@ const initConfetti = () => {
     <canvas id="confetti-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
 
     <header class="bg-surface/90 backdrop-blur-md flex justify-between items-center w-full px-gutter h-20 max-w-7xl mx-auto border-b-4 border-on-surface z-40 sticky top-0">
-      <div class="font-display-lg text-display-lg-mobile italic uppercase text-primary">Fictio</div>
+      <img src="@/assets/logo.svg" alt="Fictio Logo" class="h-10 w-auto" />
     </header>
 
     <main class="flex-grow w-full max-w-4xl mx-auto px-gutter pt-8 pb-32 relative z-10">
