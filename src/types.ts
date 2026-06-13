@@ -20,6 +20,8 @@ export type Room = {
   state: 'lobby' | 'playing' | 'results';
   currentRound: number;
   maxRounds: number;
+  bluffTimeLimit?: number;
+  voteTimeLimit?: number;
   hostId: string;
   
   // Game state

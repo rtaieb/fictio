@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { db } from '@/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, updateDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, collection, updateDoc, writeBatch, deleteDoc } from 'firebase/firestore';
 import type { Room, Player } from '@/types';
 import { generateId } from '@/utils/helpers';
 import { getRandomQuestion } from '@/data/questions';
@@ -24,11 +24,25 @@ const room = ref<Room | null>(null);
 const players = ref<Player[]>([]);
 const isHost = computed(() => room.value?.hostId === myId);
 
-// Settings
 const maxRounds = ref(5);
+const bluffTimeLimit = ref(30);
+const voteTimeLimit = ref(20);
 
 let unsubscribeRoom: () => void;
 let unsubscribePlayers: () => void;
+
+const toastMessage = ref('');
+const showToast = (msg: string) => {
+  toastMessage.value = msg;
+  setTimeout(() => { toastMessage.value = ''; }, 2000);
+};
+
+const handleDisconnect = () => {
+  if (myId && roomCode) {
+    const pRef = doc(db, `rooms/${roomCode}/players`, myId);
+    deleteDoc(pRef).catch(() => {});
+  }
+};
 
 onMounted(async () => {
   if (!roomCode) {
@@ -50,6 +64,8 @@ onMounted(async () => {
       state: 'lobby',
       currentRound: 0,
       maxRounds: 5,
+      bluffTimeLimit: 30,
+      voteTimeLimit: 20,
       hostId: myId
     } as Room);
   } else {
@@ -92,22 +108,26 @@ onMounted(async () => {
     querySnap.forEach((d) => p.push(d.data() as Player));
     players.value = p;
   });
+
+  window.addEventListener('beforeunload', handleDisconnect);
 });
 
 onUnmounted(() => {
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribePlayers) unsubscribePlayers();
+  window.removeEventListener('beforeunload', handleDisconnect);
+  handleDisconnect();
 });
 
 const copyCode = () => {
   navigator.clipboard.writeText(roomCode);
-  alert("Code copié !");
+  showToast("Code copié !");
 };
 
 const copyLink = () => {
-  const url = window.location.origin + '?room=' + roomCode;
+  const url = window.location.origin + window.location.pathname + '?room=' + roomCode;
   navigator.clipboard.writeText(url);
-  alert("Lien copié !");
+  showToast("Lien copié !");
 };
 
 const startGame = async () => {
@@ -122,12 +142,13 @@ const startGame = async () => {
   });
   
   const question = getRandomQuestion();
+  const limit = room.value?.bluffTimeLimit || 30;
   batch.update(roomRef, {
     state: 'playing',
     currentRound: 1,
     maxRounds: maxRounds.value,
     phase: 'bluffing',
-    phaseEndsAt: Date.now() + 20000, // 20s
+    phaseEndsAt: Date.now() + (limit * 1000),
     question: question,
     propositions: [],
     readyPlayers: []
@@ -139,7 +160,11 @@ const startGame = async () => {
 const updateSettings = async () => {
    if (!isHost.value) return;
    const roomRef = doc(db, 'rooms', roomCode);
-   await updateDoc(roomRef, { maxRounds: maxRounds.value });
+   await updateDoc(roomRef, { 
+     maxRounds: maxRounds.value,
+     bluffTimeLimit: bluffTimeLimit.value,
+     voteTimeLimit: voteTimeLimit.value
+   });
 };
 
 </script>
@@ -183,12 +208,24 @@ const updateSettings = async () => {
       </section>
 
       <!-- Settings (Host) -->
-      <section v-if="isHost" class="w-full max-w-md mx-auto bg-surface-container border-4 border-on-surface p-4 rounded-xl brutal-shadow">
-          <label class="font-label-bold block mb-2 text-on-surface">Nombre de tours : {{ maxRounds }}</label>
-          <input type="range" min="1" max="10" v-model.number="maxRounds" @change="updateSettings" class="w-full" />
+      <section v-if="isHost" class="w-full max-w-md mx-auto bg-surface-container border-4 border-on-surface p-4 rounded-xl brutal-shadow space-y-6">
+          <div>
+            <label class="font-label-bold block mb-2 text-on-surface">Nombre de tours : <span class="text-primary">{{ maxRounds }}</span></label>
+            <input type="range" min="1" max="10" v-model.number="maxRounds" @change="updateSettings" class="w-full accent-primary" />
+          </div>
+          <div>
+            <label class="font-label-bold block mb-2 text-on-surface">Temps de bluff : <span class="text-primary">{{ bluffTimeLimit }}s</span></label>
+            <input type="range" min="10" max="60" step="5" v-model.number="bluffTimeLimit" @change="updateSettings" class="w-full accent-primary" />
+          </div>
+          <div>
+            <label class="font-label-bold block mb-2 text-on-surface">Temps de vote : <span class="text-primary">{{ voteTimeLimit }}s</span></label>
+            <input type="range" min="10" max="60" step="5" v-model.number="voteTimeLimit" @change="updateSettings" class="w-full accent-primary" />
+          </div>
       </section>
-      <section v-else class="w-full max-w-md mx-auto text-center">
+      <section v-else class="w-full max-w-md mx-auto text-center space-y-2">
           <p class="font-label-bold text-on-surface-variant">Tours prévus : {{ room.maxRounds }}</p>
+          <p class="font-label-bold text-on-surface-variant">Temps de bluff : {{ room.bluffTimeLimit || 30 }}s</p>
+          <p class="font-label-bold text-on-surface-variant">Temps de vote : {{ room.voteTimeLimit || 20 }}s</p>
       </section>
 
       <!-- Players List Section -->
@@ -215,11 +252,18 @@ const updateSettings = async () => {
     </main>
 
     <!-- Fixed Bottom Action (Host Only) -->
-    <div v-if="isHost" class="fixed bottom-0 left-0 w-full p-container-margin bg-gradient-to-t from-surface-container via-surface-container-low/90 to-transparent z-50 flex justify-center">
-      <button @click="startGame" class="w-full max-w-lg bg-tertiary-fixed text-on-surface border-[4px] border-on-surface rounded-xl px-8 py-6 font-display-lg-mobile text-display-lg-mobile uppercase tracking-tight flex items-center justify-center gap-4 brutal-shadow-lg brutal-interactive transition-all group overflow-hidden relative">
+    <div v-if="isHost" class="fixed bottom-0 left-0 w-full p-container-margin bg-gradient-to-t from-surface-container via-surface-container-low/90 to-transparent z-40 flex justify-center pointer-events-none">
+      <button @click="startGame" class="w-full max-w-lg bg-tertiary-fixed text-on-surface border-[4px] border-on-surface rounded-xl px-8 py-6 font-display-lg-mobile text-display-lg-mobile uppercase tracking-tight flex items-center justify-center gap-4 brutal-shadow-lg brutal-interactive transition-all group overflow-hidden relative pointer-events-auto">
         <span class="relative z-10">Lancer la partie</span>
         <span class="material-symbols-outlined text-4xl relative z-10 group-hover:translate-x-2 transition-transform">play_arrow</span>
       </button>
     </div>
+
+    <!-- Toast Notification -->
+    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="transform translate-y-8 opacity-0" enter-to-class="transform translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="transform translate-y-0 opacity-100" leave-to-class="transform translate-y-8 opacity-0">
+      <div v-if="toastMessage" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 bg-[#00c853] text-white border-4 border-on-surface rounded-full brutal-shadow font-label-bold whitespace-nowrap text-center">
+        {{ toastMessage }}
+      </div>
+    </transition>
   </div>
 </template>

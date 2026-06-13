@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { db } from '@/firebase';
-import { doc, onSnapshot, updateDoc, writeBatch, collection } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, writeBatch, collection, deleteDoc } from 'firebase/firestore';
 import type { Room, Player, Proposition } from '@/types';
 
 const route = useRoute();
@@ -22,6 +22,27 @@ const bluffText = ref('');
 const selectedPropositionIndex = ref<number | null>(null);
 const timeRemaining = ref(20);
 let timerInterval: any = null;
+const revealStep = ref<'votes' | 'truth'>('votes');
+
+const getPlayerName = (id: string) => players.value.find(p => p.id === id)?.name || 'Inconnu';
+const getPlayerColor = (id: string) => players.value.find(p => p.id === id)?.avatarColor || 'bg-primary';
+
+const checkFastForward = () => {
+    if (!isHost.value || !room.value) return;
+    
+    if (room.value.phase === 'bluffing' && players.value.length > 0 && players.value.every(p => p.hasSubmitted)) {
+        const newEndsAt = Date.now() + 3500; // 3 seconds countdown
+        if (room.value.phaseEndsAt && room.value.phaseEndsAt > newEndsAt) {
+            updateDoc(doc(db, 'rooms', roomCode), { phaseEndsAt: newEndsAt });
+        }
+    }
+    
+    if (room.value.phase === 'voting' && players.value.length > 0 && players.value.every(p => p.hasVoted)) {
+        if (timeRemaining.value > 0 && !isTransitioning) {
+            handleTimerEnd();
+        }
+    }
+};
 
 // Shuffled propositions for voting
 const shuffledPropositions = ref<Proposition[]>([]);
@@ -63,6 +84,15 @@ onMounted(async () => {
           shuffledPropositions.value = [];
           bluffText.value = '';
           selectedPropositionIndex.value = null;
+          revealStep.value = 'votes';
+      }
+      
+      if (room.value.phase === 'revealing' && revealStep.value === 'votes') {
+          setTimeout(() => {
+              if (room.value?.phase === 'revealing') {
+                  revealStep.value = 'truth';
+              }
+          }, 7000);
       }
     } else {
       router.push('/');
@@ -74,6 +104,7 @@ onMounted(async () => {
     const p: Player[] = [];
     querySnap.forEach((d) => p.push(d.data() as Player));
     players.value = p.sort((a, b) => b.score - a.score);
+    checkFastForward();
   });
 
   timerInterval = setInterval(() => {
@@ -81,18 +112,35 @@ onMounted(async () => {
       const remaining = Math.ceil((room.value.phaseEndsAt - Date.now()) / 1000);
       timeRemaining.value = Math.max(0, remaining);
       
-      if (timeRemaining.value === 0 && isHost.value) {
-        handleTimerEnd();
+      if (timeRemaining.value === 0) {
+        if (room.value.phase === 'bluffing' && myPlayer.value && !myPlayer.value.hasSubmitted) {
+            bluffText.value = bluffText.value.trim() || 'Pas d\'idée !';
+            submitBluff();
+        }
+        if (isHost.value) {
+            handleTimerEnd();
+        }
       }
     }
   }, 1000);
+  
+  window.addEventListener('beforeunload', quitGame);
 });
 
 onUnmounted(() => {
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribePlayers) unsubscribePlayers();
   if (timerInterval) clearInterval(timerInterval);
+  window.removeEventListener('beforeunload', quitGame);
 });
+
+const quitGame = () => {
+    if (myId && roomCode) {
+        const pRef = doc(db, `rooms/${roomCode}/players`, myId);
+        deleteDoc(pRef).catch(() => {});
+    }
+    router.push('/');
+};
 
 const submitBluff = async () => {
     if (!bluffText.value.trim() || myPlayer.value?.hasSubmitted) return;
@@ -154,11 +202,12 @@ const handleTimerEnd = async () => {
     isTransitioning = true;
     
     const roomRef = doc(db, 'rooms', roomCode);
+    const voteLimit = room.value.voteTimeLimit || 20;
     
     if (room.value.phase === 'bluffing') {
         await updateDoc(roomRef, {
             phase: 'voting',
-            phaseEndsAt: Date.now() + 20000
+            phaseEndsAt: Date.now() + (voteLimit * 1000)
         });
     } else if (room.value.phase === 'voting') {
         // Calculate scores
@@ -213,11 +262,12 @@ const nextRound = async () => {
         
         const { getRandomQuestion } = await import('@/data/questions');
         const question = getRandomQuestion();
+        const bluffLimit = room.value.bluffTimeLimit || 30;
         
         batch.update(roomRef, {
             currentRound: room.value.currentRound + 1,
             phase: 'bluffing',
-            phaseEndsAt: Date.now() + 20000,
+            phaseEndsAt: Date.now() + (bluffLimit * 1000),
             question: question,
             propositions: []
         });
@@ -241,8 +291,8 @@ const nextRound = async () => {
       <img src="@/assets/logo.svg" alt="Fictio Logo" class="h-10 w-auto" />
       <div class="flex items-center gap-4">
         <span class="font-label-bold">Tour {{ room.currentRound }} / {{ room.maxRounds }}</span>
-        <button @click="router.push('/lobby?room=' + roomCode)" class="w-10 h-10 border-2 border-on-surface rounded-full flex items-center justify-center bg-surface-variant hover:bg-surface-dim">
-          <span class="material-symbols-outlined text-[20px]">menu</span>
+        <button @click="quitGame" class="w-10 h-10 border-2 border-on-surface rounded-full flex items-center justify-center bg-surface-variant hover:bg-surface-dim brutal-interactive" title="Quitter la partie">
+          <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
     </header>
@@ -317,17 +367,43 @@ const nextRound = async () => {
       </div>
 
       <!-- Phase: Revealing -->
-      <div v-else-if="room.phase === 'revealing'" class="w-full flex flex-col items-center gap-6">
-          <div class="w-full border-4 border-[#00c853] bg-[#e8f5e9] p-6 rounded-xl brutal-shadow-lg text-center">
-              <h2 class="font-label-bold text-[#00c853] uppercase mb-2">La vraie réponse était :</h2>
-              <p class="font-headline-md text-on-surface">{{ room.question?.trueAnswer }}</p>
+      <div v-else-if="room.phase === 'revealing'" class="w-full flex flex-col items-center gap-8">
+          <div class="text-center w-full">
+            <h1 class="font-headline-md text-on-surface mb-2" v-if="revealStep === 'votes'">Dépouillement des votes...</h1>
+            <h1 class="font-headline-md text-on-surface mb-2" v-else>La Vérité Éclate !</h1>
           </div>
 
-          <div class="w-full max-w-2xl mt-8">
-              <h3 class="font-headline-sm mb-4">Classement actuel :</h3>
-              <div v-for="p in players" :key="p.id" class="flex justify-between items-center border-b-2 border-on-surface py-2">
-                  <span class="font-body-lg font-bold">{{ p.name }}</span>
-                  <span class="font-headline-sm text-primary">{{ p.score }} pts</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-4xl">
+              <div v-for="(prop, index) in shuffledPropositions" :key="index" 
+                   :class="['border-4 rounded-xl p-4 flex flex-col gap-4 transition-all duration-500', 
+                            revealStep === 'truth' && prop.playerId === 'true_answer' ? 'border-[#00c853] bg-[#e8f5e9] scale-105 shadow-[8px_8px_0_0_#00c853]' : 
+                            revealStep === 'truth' && prop.playerId !== 'true_answer' ? 'border-on-surface bg-surface opacity-60' : 'border-on-surface bg-surface brutal-shadow']">
+                 
+                 <p class="font-body-lg text-on-surface font-bold">{{ prop.text }}</p>
+                 
+                 <div v-if="revealStep === 'truth' && prop.playerId === 'true_answer'" class="font-label-bold text-[#00c853] uppercase bg-white px-3 py-1 rounded-full border-2 border-[#00c853] self-start">Bonne réponse !</div>
+                 <div v-else-if="revealStep === 'truth' && prop.playerId !== 'true_answer'" class="font-label-bold text-secondary uppercase bg-white px-3 py-1 rounded-full border-2 border-secondary self-start">Piégé par {{ getPlayerName(prop.playerId) }}</div>
+                 
+                 <div class="flex flex-wrap gap-2 mt-auto" v-if="prop.voters.length > 0">
+                     <div v-for="voterId in prop.voters" :key="voterId" class="w-10 h-10 rounded-full border-[3px] border-on-surface flex items-center justify-center text-sm text-white font-bold brutal-shadow-sm" :class="getPlayerColor(voterId)" :title="getPlayerName(voterId)">
+                        {{ getPlayerName(voterId).charAt(0).toUpperCase() }}
+                     </div>
+                 </div>
+              </div>
+          </div>
+
+          <div class="w-full max-w-2xl mt-4" v-if="revealStep === 'truth'">
+              <h3 class="font-headline-sm mb-4 border-b-4 border-on-surface pb-2">Classement actuel :</h3>
+              <div class="flex flex-col gap-2">
+                <div v-for="p in players" :key="p.id" class="flex justify-between items-center bg-surface-container-low px-4 py-3 rounded-lg border-2 border-on-surface">
+                    <div class="flex items-center gap-3">
+                      <div :class="['w-8 h-8 rounded-full border-2 border-on-surface flex items-center justify-center text-xs text-white font-bold', p.avatarColor]">
+                        {{ p.name.charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="font-body-lg font-bold">{{ p.name }}</span>
+                    </div>
+                    <span class="font-headline-sm text-primary">{{ p.score }} pts</span>
+                </div>
               </div>
           </div>
 
