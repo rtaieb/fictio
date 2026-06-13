@@ -393,11 +393,11 @@ const nextRound = async () => {
                  <p class="font-body-lg text-on-surface font-bold">{{ prop.text }}</p>
                  
                  <div v-if="revealStep === 'truth' && prop.playerId === 'true_answer'" class="font-label-bold text-[#00c853] uppercase bg-white px-3 py-1 rounded-full border-2 border-[#00c853] self-start">Bonne réponse !</div>
-                 <div v-else-if="revealStep === 'truth' && prop.playerId !== 'true_answer'" class="font-label-bold text-secondary uppercase bg-white px-3 py-1 rounded-full border-2 border-secondary self-start">Piégé par {{ getPlayerName(prop.playerId) }}</div>
+                 <div v-else-if="revealStep === 'truth' && prop.playerId !== 'true_answer'" class="font-label-bold text-secondary uppercase bg-white px-3 py-1 rounded-full border-2 border-secondary self-start">{{ getPlayerName(prop.playerId) }}</div>
                  
                  <div class="flex flex-wrap gap-2 mt-auto" v-if="prop.voters.length > 0">
-                     <div v-for="voterId in prop.voters" :key="voterId" class="w-10 h-10 rounded-full border-[3px] border-on-surface flex items-center justify-center text-sm text-white font-bold brutal-shadow-sm" :class="getPlayerColor(voterId)" :title="getPlayerName(voterId)">
-                        {{ getPlayerName(voterId).charAt(0).toUpperCase() }}
+                     <div v-for="voterId in prop.voters" :key="voterId" class="px-3 py-1 rounded-full border-[3px] border-on-surface flex items-center justify-center text-sm text-white font-bold brutal-shadow-sm" :class="getPlayerColor(voterId)">
+                        {{ getPlayerName(voterId) }}
                      </div>
                  </div>
               </div>
@@ -418,12 +418,12 @@ const nextRound = async () => {
               </div>
           </div>
 
-          <div v-if="isHost" class="mt-8 w-full max-w-md">
+          <div v-if="isHost && revealStep === 'truth'" class="mt-8 w-full max-w-md">
               <button @click="nextRound" class="w-full btn-brutal bg-tertiary-fixed text-on-surface rounded-lg font-headline-sm py-4">
                   {{ room.currentRound >= room.maxRounds ? 'Voir le podium' : 'Tour Suivant' }}
               </button>
           </div>
-          <div v-else class="mt-8 animate-pulse text-on-surface-variant font-label-bold">
+          <div v-else-if="!isHost && revealStep === 'truth'" class="mt-8 animate-pulse text-on-surface-variant font-label-bold">
               En attente de l'hôte...
           </div>
       </div>
