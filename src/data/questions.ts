@@ -131,11 +131,6 @@ export const questions: GameQuestion[] = [
     "type": "word"
   },
   {
-    "text": "Baliverne",
-    "trueAnswer": "raconter n'importe quoi",
-    "type": "word"
-  },
-  {
     "text": "Bancroche",
     "trueAnswer": "quelqu'un qui marche de travers",
     "type": "word"
@@ -577,7 +572,7 @@ export const questions: GameQuestion[] = [
   },
   {
     "text": "Quel animal n'a pas de cerveau et pas de sang ?",
-    "trueAnswer": "la méduse ce blob",
+    "trueAnswer": "la méduse",
     "type": "question"
   },
   {

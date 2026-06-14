@@ -39,8 +39,10 @@ const showToast = (msg: string) => {
 
 const handleDisconnect = () => {
   if (myId && roomCode) {
-    const pRef = doc(db, `rooms/${roomCode}/players`, myId);
-    deleteDoc(pRef).catch(() => {});
+    fetch(`https://firestore.googleapis.com/v1/projects/fictio-7fcc4/databases/(default)/documents/rooms/${roomCode}/players/${myId}`, {
+       method: 'DELETE',
+       keepalive: true
+    }).catch(() => {});
   }
 };
 
@@ -109,13 +111,13 @@ onMounted(async () => {
     players.value = p;
   });
 
-  window.addEventListener('beforeunload', handleDisconnect);
+  window.addEventListener('pagehide', handleDisconnect);
 });
 
 onUnmounted(() => {
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribePlayers) unsubscribePlayers();
-  window.removeEventListener('beforeunload', handleDisconnect);
+  window.removeEventListener('pagehide', handleDisconnect);
 });
 
 const quitLobby = () => {
@@ -133,6 +135,21 @@ const copyLink = () => {
   const url = window.location.origin + window.location.pathname + '#/?room=' + roomCode;
   navigator.clipboard.writeText(url);
   showToast("Lien copié !");
+};
+
+const shareLink = async () => {
+  const url = window.location.origin + window.location.pathname + '#/?room=' + roomCode;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Fictio',
+        text: `Rejoignez ma partie de Fictio ! Code: ${roomCode}`,
+        url: url
+      });
+    } catch (e) {}
+  } else {
+    copyLink();
+  }
 };
 
 const startGame = async () => {
@@ -201,11 +218,14 @@ const updateSettings = async () => {
           <span class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-widest mb-2 z-10 bg-surface px-4 py-1 border-2 border-on-surface rounded-full">Code du salon</span>
           <div class="flex items-center gap-4 z-10">
             <span class="font-display-lg text-display-lg text-on-surface tracking-tighter">{{ roomCode }}</span>
-            <button @click="copyCode" class="w-12 h-12 bg-primary text-on-primary border-[3px] border-on-surface rounded-lg flex items-center justify-center brutal-shadow brutal-interactive transition-all" title="Copier le code">
+            <button @click="copyCode" class="hidden md:flex w-12 h-12 bg-primary text-on-primary border-[3px] border-on-surface rounded-lg items-center justify-center brutal-shadow brutal-interactive transition-all" title="Copier le code">
               <span class="material-symbols-outlined">content_copy</span>
             </button>
-            <button @click="copyLink" class="w-12 h-12 bg-secondary text-on-secondary border-[3px] border-on-surface rounded-lg flex items-center justify-center brutal-shadow brutal-interactive transition-all" title="Copier le lien">
+            <button @click="copyLink" class="hidden md:flex w-12 h-12 bg-secondary text-on-secondary border-[3px] border-on-surface rounded-lg items-center justify-center brutal-shadow brutal-interactive transition-all" title="Copier le lien">
               <span class="material-symbols-outlined">link</span>
+            </button>
+            <button @click="shareLink" class="md:hidden flex w-12 h-12 bg-secondary text-on-secondary border-[3px] border-on-surface rounded-lg items-center justify-center brutal-shadow brutal-interactive transition-all" title="Partager">
+              <span class="material-symbols-outlined">ios_share</span>
             </button>
           </div>
           <p class="font-body-md text-body-md text-on-surface-variant mt-4 text-center z-10">En attente des autres joueurs...</p>

@@ -124,21 +124,27 @@ onMounted(async () => {
     }
   }, 1000);
   
-  window.addEventListener('beforeunload', quitGame);
+  window.addEventListener('pagehide', handleDisconnect);
 });
 
 onUnmounted(() => {
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribePlayers) unsubscribePlayers();
   if (timerInterval) clearInterval(timerInterval);
-  window.removeEventListener('beforeunload', quitGame);
+  window.removeEventListener('pagehide', handleDisconnect);
 });
 
-const quitGame = () => {
+const handleDisconnect = () => {
     if (myId && roomCode) {
-        const pRef = doc(db, `rooms/${roomCode}/players`, myId);
-        deleteDoc(pRef).catch(() => {});
+        fetch(`https://firestore.googleapis.com/v1/projects/fictio-7fcc4/databases/(default)/documents/rooms/${roomCode}/players/${myId}`, {
+           method: 'DELETE',
+           keepalive: true
+        }).catch(() => {});
     }
+};
+
+const quitGame = () => {
+    handleDisconnect();
     router.push('/');
 };
 
@@ -181,26 +187,12 @@ const submitVote = async (index: number) => {
     
     selectedPropositionIndex.value = index;
     
-    const roomRef = doc(db, 'rooms', roomCode);
     const pRef = doc(db, `rooms/${roomCode}/players`, myId!);
-    
-    const batch = writeBatch(db);
-    batch.update(pRef, { hasVoted: true });
-    
-    // Update the actual proposition array in room
-    let props = room.value?.propositions || [];
-    // If it's the true answer, it might not be in the room's propositions array initially,
-    // so we ensure it's there or handle it.
-    let targetPropIndex = props.findIndex(p => p.playerId === prop.playerId);
-    
-    if (targetPropIndex === -1 && prop.playerId === 'true_answer') {
-        props.push({ playerId: 'true_answer', text: prop.text, voters: [myId!] });
-    } else if (targetPropIndex !== -1) {
-        props[targetPropIndex].voters.push(myId!);
-    }
-    
-    batch.update(roomRef, { propositions: props });
-    await batch.commit();
+    await updateDoc(pRef, { hasVoted: true, votedFor: prop.playerId });
+};
+
+const getVoters = (propPlayerId: string) => {
+    return players.value.filter(p => p.votedFor === propPlayerId);
 };
 
 // Host controls
@@ -230,22 +222,18 @@ const handleTimerEnd = async () => {
 
 const calculateScores = async () => {
     const batch = writeBatch(db);
-    const props = room.value?.propositions || [];
     
     players.value.forEach(p => {
         let newScore = p.score;
         
         // Did they find the true answer?
-        const trueProp = props.find(pr => pr.playerId === 'true_answer');
-        if (trueProp && trueProp.voters.includes(p.id)) {
+        if (p.votedFor === 'true_answer') {
             newScore += 2; // +2 for finding truth
         }
         
         // Did someone vote for their bluff?
-        const theirProp = props.find(pr => pr.playerId === p.id);
-        if (theirProp) {
-            newScore += theirProp.voters.length * 1; // +1 per trapped player
-        }
+        const trappedPlayers = players.value.filter(other => other.votedFor === p.id);
+        newScore += trappedPlayers.length * 1; // +1 per trapped player
         
         const pRef = doc(db, `rooms/${roomCode}/players`, p.id);
         batch.update(pRef, { score: newScore });
@@ -265,7 +253,7 @@ const nextRound = async () => {
         const batch = writeBatch(db);
         players.value.forEach(p => {
             const pRef = doc(db, `rooms/${roomCode}/players`, p.id);
-            batch.update(pRef, { hasSubmitted: false, hasVoted: false });
+            batch.update(pRef, { hasSubmitted: false, hasVoted: false, votedFor: null });
         });
         
         const { getRandomQuestion } = await import('@/data/questions');
@@ -318,20 +306,21 @@ const nextRound = async () => {
         </div>
       </div>
 
-      <!-- Phase: Bluffing -->
-      <div v-if="room.phase === 'bluffing'" class="w-full flex flex-col items-center">
-        <div class="w-full bg-surface border-4 border-on-surface rounded-xl p-card-padding flex flex-col items-center text-center mb-10 brutal-shadow-lg relative overflow-hidden">
-          <h2 class="font-label-bold text-on-surface-variant uppercase mb-4 tracking-widest">
+      <!-- Question Container (Always visible) -->
+      <div class="w-full bg-surface border-4 border-on-surface rounded-xl p-6 flex flex-col items-center text-center mb-10 brutal-shadow-lg relative overflow-hidden">
+          <h2 class="font-label-bold text-on-surface-variant uppercase mb-2 tracking-widest text-sm">
               {{ room.question?.type === 'word' ? 'Le mot mystère est :' : 'La question est :' }}
           </h2>
-          <h1 class="font-display-lg text-primary break-all mb-4">
+          <h1 class="font-display-sm md:font-display-md text-primary break-all mb-2">
               {{ room.question?.text }}
           </h1>
-          <p class="font-body-lg text-on-surface max-w-lg">
+          <p v-if="room.phase === 'bluffing'" class="font-body-lg text-on-surface max-w-lg">
               {{ room.question?.type === 'word' ? 'Invente la définition la plus crédible pour piéger tes amis.' : 'Invente une fausse réponse crédible.' }}
           </p>
-        </div>
+      </div>
 
+      <!-- Phase: Bluffing -->
+      <div v-if="room.phase === 'bluffing'" class="w-full flex flex-col items-center">
         <div class="w-full max-w-2xl flex flex-col gap-6" v-if="!myPlayer?.hasSubmitted">
           <div class="relative w-full">
             <textarea v-model="bluffText" class="w-full input-brutal rounded-xl p-4 font-body-lg" rows="3" placeholder="Tape ton bluff ici..."></textarea>
@@ -360,14 +349,14 @@ const nextRound = async () => {
                 @click="submitVote(index)"
                 :disabled="prop.playerId === myId || prop.isEmpty || myPlayer?.hasVoted"
                 :class="[
-                   'border-4 border-on-surface rounded-xl p-4 text-left flex flex-col transition-all duration-300', 
+                   'border-4 border-on-surface rounded-xl p-4 text-left flex flex-col transition-all duration-300 w-full', 
                    selectedPropositionIndex === index ? 'border-secondary shadow-[0_0_0_4px_#ab008f] scale-[1.02] bg-secondary' : 'bg-surface brutal-shadow',
                    !myPlayer?.hasVoted && prop.playerId !== myId && !prop.isEmpty ? 'hover:translate-y-[-2px] hover:shadow-[0_0_0_4px_#ab008f]' : '',
                    (prop.playerId === myId || prop.isEmpty) ? 'opacity-50 cursor-not-allowed filter grayscale' : '',
                    myPlayer?.hasVoted && selectedPropositionIndex !== index ? 'opacity-50' : ''
                 ]"
               >
-                 <p class="font-body-lg flex-grow" :class="selectedPropositionIndex === index ? 'text-white' : 'text-on-surface'">{{ prop.text }}</p>
+                 <p class="font-body-lg flex-grow whitespace-normal break-words w-full" :class="selectedPropositionIndex === index ? 'text-white' : 'text-on-surface'">{{ prop.text }}</p>
                  <span v-if="prop.playerId === myId" class="text-xs font-label-bold mt-2 opacity-70" :class="selectedPropositionIndex === index ? 'text-white' : 'text-on-surface'">Ton bluff</span>
                  <span v-if="prop.isEmpty" class="text-xs font-label-bold mt-2 opacity-70 text-on-surface">Vote impossible</span>
               </button>
@@ -390,14 +379,14 @@ const nextRound = async () => {
                             revealStep === 'truth' && prop.playerId === 'true_answer' ? 'border-[#00c853] bg-[#e8f5e9] scale-105 shadow-[8px_8px_0_0_#00c853]' : 
                             revealStep === 'truth' && prop.playerId !== 'true_answer' ? 'border-on-surface bg-surface opacity-60' : 'border-on-surface bg-surface brutal-shadow']">
                  
-                 <p class="font-body-lg text-on-surface font-bold">{{ prop.text }}</p>
+                 <p class="font-body-lg text-on-surface font-bold whitespace-normal break-words w-full">{{ prop.text }}</p>
                  
                  <div v-if="revealStep === 'truth' && prop.playerId === 'true_answer'" class="font-label-bold text-[#00c853] uppercase bg-white px-3 py-1 rounded-full border-2 border-[#00c853] self-start">Bonne réponse !</div>
                  <div v-else-if="revealStep === 'truth' && prop.playerId !== 'true_answer'" class="font-label-bold text-secondary uppercase bg-white px-3 py-1 rounded-full border-2 border-secondary self-start">{{ getPlayerName(prop.playerId) }}</div>
                  
-                 <div class="flex flex-wrap gap-2 mt-auto" v-if="prop.voters.length > 0">
-                     <div v-for="voterId in prop.voters" :key="voterId" class="px-3 py-1 rounded-full border-[3px] border-on-surface flex items-center justify-center text-sm text-white font-bold brutal-shadow-sm" :class="getPlayerColor(voterId)">
-                        {{ getPlayerName(voterId) }}
+                 <div class="flex flex-wrap gap-2 mt-auto" v-if="getVoters(prop.playerId).length > 0">
+                     <div v-for="voter in getVoters(prop.playerId)" :key="voter.id" class="px-3 py-1 rounded-full border-[3px] border-on-surface flex items-center justify-center text-sm text-white font-bold brutal-shadow-sm" :class="getPlayerColor(voter.id)">
+                        {{ voter.name }}
                      </div>
                  </div>
               </div>

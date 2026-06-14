@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getDatabase } from "firebase/database";
+import { getDatabase, ref, set, remove } from "firebase/database";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAUu3CpQ4zIkD41fFrtHDntLYtgU6OnoSQ",
@@ -13,5 +12,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const rtdb = getDatabase(app);
+const db = getDatabase(app);
+const testRef = ref(db, 'test');
+set(testRef, "test-value").then(() => {
+  console.log("RTDB WORKS!");
+  remove(testRef).then(() => process.exit(0));
+}).catch(e => {
+  console.error("RTDB FAILED", e.message);
+  process.exit(1);
+});

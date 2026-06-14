@@ -22,7 +22,7 @@ async function runTests() {
       pages.push(page);
       
       // Navigate
-      await page.goto('http://localhost:5173/', { waitUntil: 'networkidle0' });
+      await page.goto('http://localhost:5173/fictio/', { waitUntil: 'networkidle0' });
       
       // Join
       await page.type('#pseudo', `Player${i}`);
@@ -54,7 +54,7 @@ async function runTests() {
     
     // Everyone should see GameView (Phase de Bluff)
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.includes('Phase de Bluff'), {timeout: 10000});
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('phase de bluff'), {timeout: 10000});
       
       // Type a bluff and click Soumettre
       await page.type('textarea', 'Ceci est mon bluff ' + Math.random());
@@ -65,11 +65,42 @@ async function runTests() {
           }
       });
       // Verify it changes state to 'En attente des autres joueurs...'
-      await page.waitForFunction(() => document.body.innerText.includes('En attente des autres joueurs'), {timeout: 5000});
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('en attente des autres joueurs'), {timeout: 5000});
     }
     console.log("All players submitted their bluff successfully!");
 
-    console.log("Test Passed! Basic flow and submission works.");
+    // Wait for Voting phase (checkFastForward should auto-skip)
+    console.log("Waiting for voting phase...");
+    for(let page of pages) {
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('quel est le vrai ?'), {timeout: 15000});
+      
+      // Submit vote
+      await page.evaluate(() => {
+          const buttons = document.querySelectorAll('main button');
+          for (let b of buttons) {
+              const text = b.innerText.toLowerCase();
+              if (!b.disabled && !text.includes('ton bluff') && !text.includes('vote impossible')) {
+                  b.click();
+                  break;
+              }
+          }
+      });
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('vote enregistré'), {timeout: 5000});
+    }
+    console.log("All players submitted their vote successfully!");
+
+    // Wait for revealing phase
+    console.log("Waiting for revealing phase...");
+    for(let page of pages) {
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('dépouillement des votes...'), {timeout: 15000});
+    }
+    
+    console.log("Waiting for truth to be revealed...");
+    for(let page of pages) {
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('la vérité éclate !'), {timeout: 15000});
+    }
+
+    console.log("Test Passed! Basic flow, submission, voting, and revealing works.");
 
   } catch (error) {
     console.error("TEST FAILED:", error);
