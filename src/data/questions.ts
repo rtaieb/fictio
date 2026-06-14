@@ -3011,11 +3011,6 @@ export const questions: GameQuestion[] = [
     "type": "word"
   },
   {
-    "text": "pantagruélique",
-    "trueAnswer": "un festin vraiment énorme",
-    "type": "word"
-  },
-  {
     "text": "pauciflore",
     "trueAnswer": "une plante avec très peu de fleurs",
     "type": "word"
@@ -4338,11 +4333,6 @@ export const questions: GameQuestion[] = [
   {
     "text": "Volte-face",
     "trueAnswer": "retourner complètement sa veste",
-    "type": "word"
-  },
-  {
-    "text": "Volubile",
-    "trueAnswer": "un mec qui parle beaucoup trop vite",
     "type": "word"
   },
   {
