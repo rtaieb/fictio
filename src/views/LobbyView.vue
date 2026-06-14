@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { db } from '@/firebase';
-import { doc, getDoc, setDoc, onSnapshot, collection, updateDoc, writeBatch, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, onSnapshot, collection, updateDoc, writeBatch } from 'firebase/firestore';
 import type { Room, Player } from '@/types';
 import { generateId } from '@/utils/helpers';
 import { getRandomQuestion } from '@/data/questions';

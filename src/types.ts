@@ -1,12 +1,13 @@
-export type Player = {
+export interface Player {
   id: string;
   name: string;
   score: number;
   isHost: boolean;
   hasSubmitted?: boolean;
   hasVoted?: boolean;
+  votedFor?: string | null;
   avatarColor?: string; // e.g. bg-primary, bg-secondary
-};
+}
 
 export interface Proposition {
   playerId: string; // ID du joueur ou 'true_answer'
