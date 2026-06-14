@@ -65,7 +65,10 @@ onMounted(async () => {
       room.value = newData;
       
       if (room.value.state === 'results') {
-        router.push({ name: 'results', query: { room: roomCode } });
+        router.push({ name: 'results', query: { room: roomCode } }).catch(() => {
+            window.location.href = `#/results?room=${roomCode}`;
+        });
+        return;
       }
       
       if (room.value.phase === 'voting' && shuffledPropositions.value.length === 0) {
@@ -250,6 +253,9 @@ const nextRound = async () => {
     
     if (room.value.currentRound >= room.value.maxRounds) {
         await updateDoc(roomRef, { state: 'results' });
+        router.push({ name: 'results', query: { room: roomCode } }).catch(() => {
+            window.location.href = `#/results?room=${roomCode}`;
+        });
     } else {
         const batch = writeBatch(db);
         players.value.forEach(p => {
@@ -393,6 +399,15 @@ const nextRound = async () => {
               </div>
           </div>
 
+          <div v-if="isHost && revealStep === 'truth'" class="mt-8 w-full max-w-md">
+              <button @click="nextRound" class="w-full btn-brutal bg-tertiary-fixed text-on-surface rounded-lg font-headline-sm py-4">
+                  {{ room.currentRound >= room.maxRounds ? 'Voir le podium' : 'Tour Suivant' }}
+              </button>
+          </div>
+          <div v-else-if="!isHost && revealStep === 'truth'" class="mt-8 animate-pulse text-on-surface-variant font-label-bold">
+              En attente de l'hôte...
+          </div>
+
           <div class="w-full max-w-2xl mt-4" v-if="revealStep === 'truth'">
               <h3 class="font-headline-sm mb-4 border-b-4 border-on-surface pb-2">Classement actuel :</h3>
               <div class="flex flex-col gap-2">
@@ -406,15 +421,6 @@ const nextRound = async () => {
                     <span class="font-headline-sm text-primary">{{ p.score }} pts</span>
                 </div>
               </div>
-          </div>
-
-          <div v-if="isHost && revealStep === 'truth'" class="mt-8 w-full max-w-md">
-              <button @click="nextRound" class="w-full btn-brutal bg-tertiary-fixed text-on-surface rounded-lg font-headline-sm py-4">
-                  {{ room.currentRound >= room.maxRounds ? 'Voir le podium' : 'Tour Suivant' }}
-              </button>
-          </div>
-          <div v-else-if="!isHost && revealStep === 'truth'" class="mt-8 animate-pulse text-on-surface-variant font-label-bold">
-              En attente de l'hôte...
           </div>
       </div>
 

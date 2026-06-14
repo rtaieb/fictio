@@ -15,10 +15,12 @@ async function runTests() {
   try {
     for (let i = 1; i <= 4; i++) {
       console.log(`Player ${i} joining...`);
-      const context = await browser.createBrowserContext();
-      const page = await context.newPage();
+      const context = browser.defaultBrowserContext();
+      context.overridePermissions('http://localhost:5173', ['clipboard-read', 'clipboard-write']);
+
+      const page = await browser.newPage();
       page.on('console', msg => console.log(`PAGE ${i} LOG:`, msg.text()));
-      page.on('pageerror', err => console.log(`PAGE ${i} ERROR:`, err.toString()));
+      page.on('pageerror', err => console.error(`PAGE ${i} ERROR:`, err));
       pages.push(page);
       
       // Navigate
@@ -39,6 +41,24 @@ async function runTests() {
     }
 
     console.log("All 4 players joined the lobby.");
+
+    // Wait for players to be visible in the host lobby
+    await pages[0].waitForFunction(() => document.querySelectorAll('.rounded-full.border-\\[4px\\]').length === 4, {timeout: 10000});
+
+    // Host sets maxRounds to 1
+    await pages[0].evaluate(() => {
+        const input = document.querySelector('input[type="range"]');
+        if (input) {
+            input.value = 1;
+            input.dispatchEvent(new Event('change'));
+            input.dispatchEvent(new Event('input'));
+        }
+    });
+
+    // Wait for settings to settle
+    await new Promise(r => setTimeout(r, 1000));
+
+    console.log("Host is starting the game...");
     const hostPage = pages[0];
     
     // Start Game
@@ -100,7 +120,26 @@ async function runTests() {
       await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('la vérité éclate !'), {timeout: 15000});
     }
 
-    console.log("Test Passed! Basic flow, submission, voting, and revealing works.");
+    console.log("Waiting for Voir le podium button on host...");
+    await pages[0].waitForFunction(() => document.body.innerText.toLowerCase().includes('voir le podium'), {timeout: 15000});
+
+    console.log("Clicking Voir le podium...");
+    await pages[0].evaluate(() => {
+        const buttons = document.querySelectorAll('button');
+        for (let b of buttons) {
+            if (b.innerText.toLowerCase().includes('voir le podium')) {
+                b.click();
+                break;
+            }
+        }
+    });
+
+    console.log("Waiting for results page...");
+    for(let page of pages) {
+        await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('fin de partie !'), {timeout: 15000});
+    }
+
+    console.log("Test Passed! Basic flow, submission, voting, revealing, and podium works.");
 
   } catch (error) {
     console.error("TEST FAILED:", error);
