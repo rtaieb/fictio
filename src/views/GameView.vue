@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { db } from '@/firebase';
-import { doc, onSnapshot, updateDoc, writeBatch, collection } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, writeBatch, collection, arrayUnion } from 'firebase/firestore';
 import type { Room, Player, Proposition } from '@/types';
 
 const route = useRoute();
@@ -166,14 +166,13 @@ const submitBluff = async (autoSubmit: boolean = false) => {
     const batch = writeBatch(db);
     batch.update(pRef, { hasSubmitted: true });
     
-    const currentProps = room.value?.propositions || [];
     batch.update(roomRef, { 
-        propositions: [...currentProps, {
+        propositions: arrayUnion({
             playerId: myId!,
             text: textToSubmit,
             voters: [],
             isEmpty: isEmpty
-        }]
+        })
     });
     
     await batch.commit();
