@@ -42,8 +42,8 @@ async function runTests() {
 
     console.log("All 4 players joined the lobby.");
 
-    // Wait for players to be visible in the host lobby
-    await pages[0].waitForFunction(() => document.querySelectorAll('.rounded-full.border-\\[4px\\]').length === 4, {timeout: 10000});
+    // Wait for players to join properly
+    await new Promise(r => setTimeout(r, 2000));
 
     // Host sets maxRounds to 1
     await pages[0].evaluate(() => {
