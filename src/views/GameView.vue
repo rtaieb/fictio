@@ -60,7 +60,9 @@ onMounted(async () => {
   const roomRef = doc(db, 'rooms', roomCode);
   unsubscribeRoom = onSnapshot(roomRef, (docSnap) => {
     if (docSnap.exists()) {
-      room.value = docSnap.data() as Room;
+      const newData = docSnap.data() as Room;
+      const isNewRound = room.value?.currentRound !== newData.currentRound;
+      room.value = newData;
       
       if (room.value.state === 'results') {
         router.push({ name: 'results', query: { room: roomCode } });
@@ -81,7 +83,7 @@ onMounted(async () => {
         shuffledPropositions.value = [...props].sort(() => Math.random() - 0.5);
       }
       
-      if (room.value.phase === 'bluffing') {
+      if (isNewRound && room.value.phase === 'bluffing') {
           shuffledPropositions.value = [];
           bluffText.value = '';
           selectedPropositionIndex.value = null;
