@@ -52,25 +52,13 @@ async function runTests() {
         return false;
     }, {timeout: 15000});
 
-    // Host sets maxRounds to 1, bluffTimeLimit to 10, voteTimeLimit to 10
+    // Host sets maxRounds to 1
     await pages[0].evaluate(() => {
-        const inputs = document.querySelectorAll('input[type="range"]');
-        if (inputs.length >= 3) {
-            inputs[0].value = 1;
-            inputs[0].dispatchEvent(new Event('change'));
-            inputs[0].dispatchEvent(new Event('input'));
-            
-            inputs[1].value = 10;
-            inputs[1].dispatchEvent(new Event('change'));
-            inputs[1].dispatchEvent(new Event('input'));
-
-            inputs[2].value = 10;
-            inputs[2].dispatchEvent(new Event('change'));
-            inputs[2].dispatchEvent(new Event('input'));
-        } else if (inputs.length > 0) {
-            inputs[0].value = 1;
-            inputs[0].dispatchEvent(new Event('change'));
-            inputs[0].dispatchEvent(new Event('input'));
+        const input = document.querySelector('input[type="range"]');
+        if (input) {
+            input.value = 1;
+            input.dispatchEvent(new Event('change'));
+            input.dispatchEvent(new Event('input'));
         }
     });
 
