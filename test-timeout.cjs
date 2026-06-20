@@ -52,25 +52,13 @@ async function runTests() {
         return false;
     }, {timeout: 15000});
 
-    // Host sets maxRounds to 1, bluffTimeLimit to 10, voteTimeLimit to 10
+    // Host sets maxRounds to 1
     await pages[0].evaluate(() => {
-        const inputs = document.querySelectorAll('input[type="range"]');
-        if (inputs.length >= 3) {
-            inputs[0].value = 1;
-            inputs[0].dispatchEvent(new Event('change'));
-            inputs[0].dispatchEvent(new Event('input'));
-            
-            inputs[1].value = 10;
-            inputs[1].dispatchEvent(new Event('change'));
-            inputs[1].dispatchEvent(new Event('input'));
-
-            inputs[2].value = 10;
-            inputs[2].dispatchEvent(new Event('change'));
-            inputs[2].dispatchEvent(new Event('input'));
-        } else if (inputs.length > 0) {
-            inputs[0].value = 1;
-            inputs[0].dispatchEvent(new Event('change'));
-            inputs[0].dispatchEvent(new Event('input'));
+        const input = document.querySelector('input[type="range"]');
+        if (input) {
+            input.value = 1;
+            input.dispatchEvent(new Event('change'));
+            input.dispatchEvent(new Event('input'));
         }
     });
 
@@ -94,26 +82,29 @@ async function runTests() {
     // Everyone should see GameView (Phase de Bluff)
     for(let page of pages) {
       await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('phase de bluff'), {timeout: 10000});
-      
-      // Type a bluff and click Soumettre
-      await page.type('textarea', 'Ceci est mon bluff ' + Math.random());
-      await page.evaluate(() => {
-          const btns = document.querySelectorAll('button');
-          for (let b of btns) {
-              if (b.innerText.toUpperCase().includes('SOUMETTRE')) b.click();
-          }
-      });
-      // Verify it changes state to 'En attente des autres joueurs...'
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('en attente des autres joueurs'), {timeout: 5000});
     }
-    console.log("All players submitted their bluff successfully!");
+    
+    // Wait for the timer to expire (30 seconds default) and transition to voting phase
+    console.log("Waiting for 35 seconds for the timer to expire...");
+    await new Promise(r => setTimeout(r, 35000));
+    
+    console.log("Checking if phase changed to voting and all answers are present...");
 
-    // Wait for Voting phase (checkFastForward should auto-skip)
+    // Wait for Voting phase (no fast-forward since we timed out)
     console.log("Waiting for voting phase...");
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('quel est le vrai ?'), {timeout: 15000});
+      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('quel est le vrai ?'), {timeout: 30000});
       
-      // Submit vote
+      // Verify exactly 5 choices are presented
+      const numChoices = await page.evaluate(() => {
+          return document.querySelectorAll('main button').length;
+      });
+      console.log(`Page has ${numChoices} choices.`);
+      if (numChoices !== 5) {
+          throw new Error(`Expected 5 voting choices, but found ${numChoices}`);
+      }
+      
+      // Submit vote (vote for true answer, but we don't know which one it is easily, just pick the first valid one)
       await page.evaluate(() => {
           const buttons = document.querySelectorAll('main button');
           for (let b of buttons) {

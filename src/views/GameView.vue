@@ -71,9 +71,9 @@ onMounted(async () => {
         return;
       }
       
-      if (room.value.phase === 'voting' && shuffledPropositions.value.length === 0) {
+      if (room.value.phase === 'voting') {
         // Prepare shuffled propositions once when entering voting phase
-        let props = room.value.propositions || [];
+        let props = [...(room.value.propositions || [])];
         // Add true answer
         if (room.value.question && !props.find(p => p.playerId === 'true_answer')) {
             props.push({
@@ -82,8 +82,23 @@ onMounted(async () => {
                 voters: []
             });
         }
-        // Shuffle
-        shuffledPropositions.value = [...props].sort(() => Math.random() - 0.5);
+        
+        if (shuffledPropositions.value.length === 0) {
+            // Initial Shuffle
+            shuffledPropositions.value = [...props].sort(() => Math.random() - 0.5);
+        } else {
+            // Append missing propositions that arrived after the initial shuffle
+            const existingIds = new Set(shuffledPropositions.value.map(p => p.playerId));
+            const newProps = props.filter(p => !existingIds.has(p.playerId));
+            if (newProps.length > 0) {
+                const updated = [...shuffledPropositions.value];
+                for (const np of newProps) {
+                    const insertIdx = Math.floor(Math.random() * (updated.length + 1));
+                    updated.splice(insertIdx, 0, np);
+                }
+                shuffledPropositions.value = updated;
+            }
+        }
       }
       
       if (isNewRound && room.value.phase === 'bluffing') {

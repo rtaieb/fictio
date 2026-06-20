@@ -39,7 +39,7 @@ const joinOrCreate = () => {
       <div class="absolute -bottom-6 -right-6 w-16 h-16 bg-primary-fixed rounded-none border-3 border-black shadow-[4px_4px_0_0_#000000] rotate-12 -z-10 group-hover:-rotate-12 transition-transform duration-300"></div>
       <img src="@/assets/logo.svg" alt="Fictio Logo" class="w-full max-w-[260px] mx-auto hover:scale-105 transition-transform duration-300 drop-shadow-md" />
       <p class="font-label-bold text-label-bold text-on-surface mt-unit tracking-widest uppercase">
-        Le jeu de bluff ultime
+        La vérité ne suffit plus
       </p>
     </div>
 
