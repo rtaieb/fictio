@@ -63,41 +63,29 @@ const joinOrCreate = () => {
         </div>
       </div>
 
-      <!-- Create Game Button -->
-      <div class="w-full">
-        <button @click="joinOrCreate" v-if="!roomCode" class="w-full flex items-center justify-center space-x-2 bg-secondary text-on-secondary rounded-full font-headline-sm text-headline-sm px-6 py-4 btn-brutal">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
-          <span>Créer une partie</span>
+      <!-- Room Code Input (Optional) -->
+      <div class="w-full space-y-2 mt-8">
+        <label for="room-code" class="block font-headline-sm text-headline-sm text-center">Code de la salle (optionnel)</label>
+        <input 
+          type="text" 
+          id="room-code" 
+          v-model="roomCode"
+          maxlength="4" 
+          class="w-full input-brutal text-center font-display-lg text-display-lg-mobile uppercase tracking-widest px-4 py-3 placeholder:text-outline-variant" 
+          placeholder="LAISSE VIDE POUR CRÉER" 
+          style="min-height: 64px;"
+          @keyup.enter="joinOrCreate"
+        />
+      </div>
+
+      <!-- Unified Action Button -->
+      <div class="w-full mt-6">
+        <button @click="joinOrCreate" :disabled="roomCode.length > 0 && roomCode.length !== 4" class="w-full flex items-center justify-center space-x-2 bg-primary-container text-on-primary-container rounded-full font-headline-sm text-headline-sm px-6 py-4 btn-brutal transition-colors" :class="roomCode.length === 4 ? 'bg-secondary text-on-secondary' : ''">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">
+            {{ roomCode.length === 4 ? 'login' : 'add_circle' }}
+          </span>
+          <span>{{ roomCode.length === 4 ? 'Rejoindre la partie' : 'Créer une partie' }}</span>
         </button>
-      </div>
-
-      <!-- Divider -->
-      <div class="flex items-center space-x-4 my-6">
-        <div class="flex-grow h-[3px] bg-black"></div>
-        <span class="font-label-bold text-label-bold text-on-surface uppercase">OU</span>
-        <div class="flex-grow h-[3px] bg-black"></div>
-      </div>
-
-      <!-- Join Game Section -->
-      <div class="w-full space-y-4">
-        <label class="block font-headline-sm text-headline-sm text-center" for="room-code">
-          Rejoindre une salle
-        </label>
-        <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-          <input 
-            type="text" 
-            id="room-code" 
-            v-model="roomCode"
-            maxlength="4" 
-            class="flex-grow input-brutal text-center font-display-lg text-display-lg-mobile uppercase tracking-widest px-4 py-3 placeholder:text-outline-variant uppercase" 
-            placeholder="CODE" 
-            style="min-height: 64px;"
-            @keyup.enter="joinOrCreate"
-          />
-          <button @click="joinOrCreate" :disabled="roomCode.length !== 4" class="md:w-32 flex items-center justify-center bg-primary-container text-on-primary-container rounded-full font-headline-sm text-headline-sm px-6 py-4 btn-brutal shrink-0">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">login</span>
-          </button>
-        </div>
       </div>
 
     </div>
