@@ -15,10 +15,10 @@ async function runTests() {
   try {
     for (let i = 1; i <= 4; i++) {
       console.log(`Player ${i} joining...`);
-      const context = browser.defaultBrowserContext();
-      context.overridePermissions('http://localhost:5173', ['clipboard-read', 'clipboard-write']);
+      const context = await browser.createBrowserContext();
+      await context.overridePermissions('http://localhost:5173', ['clipboard-read', 'clipboard-write']);
 
-      const page = await browser.newPage();
+      const page = await context.newPage();
       page.on('console', msg => console.log(`PAGE ${i} LOG:`, msg.text()));
       page.on('pageerror', err => console.error(`PAGE ${i} ERROR:`, err));
       pages.push(page);
@@ -37,7 +37,7 @@ async function runTests() {
       await joinButtons[1].click();
       
       // Wait for lobby to render
-      await page.waitForFunction(() => document.body.innerText.includes('Joueurs'), {timeout: 10000});
+      await page.waitForFunction(() => document.body.textContent.includes('Joueurs'), {timeout: 10000});
     }
 
     console.log("All 4 players joined the lobby.");
@@ -81,7 +81,7 @@ async function runTests() {
     
     // Everyone should see GameView (Phase de Bluff)
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('phase de bluff'), {timeout: 10000});
+      await page.waitForSelector('textarea', {timeout: 10000});
       
       // Type a bluff and click Soumettre
       await page.type('textarea', 'Ceci est mon bluff ' + Math.random());
@@ -92,14 +92,14 @@ async function runTests() {
           }
       });
       // Verify it changes state to 'En attente des autres joueurs...'
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('en attente des autres joueurs'), {timeout: 5000});
+      await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('en attente des autres joueurs'), {timeout: 5000});
     }
     console.log("All players submitted their bluff successfully!");
 
     // Wait for Voting phase (checkFastForward should auto-skip)
     console.log("Waiting for voting phase...");
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('quel est le vrai ?'), {timeout: 15000});
+      await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('quel est le vrai ?'), {timeout: 15000});
       
       // Submit vote
       await page.evaluate(() => {
@@ -112,23 +112,23 @@ async function runTests() {
               }
           }
       });
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('vote enregistré'), {timeout: 5000});
+      await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('vote enregistré'), {timeout: 5000});
     }
     console.log("All players submitted their vote successfully!");
 
     // Wait for revealing phase
     console.log("Waiting for revealing phase...");
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('dépouillement des votes...'), {timeout: 15000});
+      await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('dépouillement des votes...'), {timeout: 15000});
     }
     
     console.log("Waiting for truth to be revealed...");
     for(let page of pages) {
-      await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('la vérité éclate !'), {timeout: 15000});
+      await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('la vérité éclate !'), {timeout: 15000});
     }
 
     console.log("Waiting for Voir le podium button on host...");
-    await pages[0].waitForFunction(() => document.body.innerText.toLowerCase().includes('voir le podium'), {timeout: 15000});
+    await pages[0].waitForFunction(() => document.body.textContent.toLowerCase().includes('voir le podium'), {timeout: 15000});
 
     console.log("Clicking Voir le podium...");
     await pages[0].evaluate(() => {
@@ -143,7 +143,7 @@ async function runTests() {
 
     console.log("Waiting for results page...");
     for(let page of pages) {
-        await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('fin de partie !'), {timeout: 15000});
+        await page.waitForFunction(() => document.body.textContent.toLowerCase().includes('fin de partie !'), {timeout: 15000});
     }
 
     console.log("Test Passed! Basic flow, submission, voting, revealing, and podium works.");
@@ -151,9 +151,9 @@ async function runTests() {
   } catch (error) {
     console.error("TEST FAILED:", error);
     try {
-      if (pages.length > 0) {
-        await pages[0].screenshot({path: 'test_failure.png'});
-        console.log("Screenshot saved to test_failure.png");
+      for (let j = 0; j < pages.length; j++) {
+        await pages[j].screenshot({path: `test_failure_page_${j}.png`});
+        console.log(`Screenshot saved to test_failure_page_${j}.png`);
       }
     } catch(e) {}
     process.exit(1);
