@@ -163,7 +163,10 @@ const startGame = async () => {
     batch.update(pRef, { score: 0, hasSubmitted: false, hasVoted: false });
   });
   
-  const question = getRandomQuestion();
+  const history = room.value?.previousTypes || [];
+  const question = getRandomQuestion(history);
+  const newHistory = [...history, question.type];
+  
   const limit = room.value?.bluffTimeLimit || 30;
   batch.update(roomRef, {
     state: 'playing',
@@ -172,6 +175,7 @@ const startGame = async () => {
     phase: 'bluffing',
     phaseEndsAt: Date.now() + (limit * 1000),
     question: question,
+    previousTypes: newHistory,
     propositions: [],
     readyPlayers: []
   });

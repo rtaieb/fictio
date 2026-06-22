@@ -279,7 +279,9 @@ const nextRound = async () => {
         });
         
         const { getRandomQuestion } = await import('@/data/questions');
-        const question = getRandomQuestion();
+        const history = room.value.previousTypes || [];
+        const question = getRandomQuestion(history);
+        const newHistory = [...history, question.type];
         const bluffLimit = room.value.bluffTimeLimit || 30;
         
         batch.update(roomRef, {
@@ -287,6 +289,7 @@ const nextRound = async () => {
             phase: 'bluffing',
             phaseEndsAt: Date.now() + (bluffLimit * 1000),
             question: question,
+            previousTypes: newHistory,
             propositions: []
         });
         

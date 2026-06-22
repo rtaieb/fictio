@@ -34,6 +34,7 @@ export type Room = {
     trueAnswer: string;
     type: 'word' | 'question';
   };
+  previousTypes?: ('word' | 'question')[];
   propositions?: Proposition[];
   readyPlayers?: string[]; // array of playerIds ready for next round
 };

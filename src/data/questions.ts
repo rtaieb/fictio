@@ -4992,6 +4992,23 @@ export const questions: GameQuestion[] = [
   }
 ];
 
-export function getRandomQuestion(): GameQuestion {
-  return questions[Math.floor(Math.random() * questions.length)];
+export function getRandomQuestion(history: ('word' | 'question')[] = []): GameQuestion {
+  let excludeType: 'word' | 'question' | null = null;
+  
+  if (history.length >= 3) {
+    const last3 = history.slice(-3);
+    if (last3.every(t => t === 'word')) {
+      excludeType = 'word';
+    } else if (last3.every(t => t === 'question')) {
+      excludeType = 'question';
+    }
+  }
+
+  let pool = questions;
+  if (excludeType) {
+    pool = questions.filter(q => q.type !== excludeType);
+    if (pool.length === 0) pool = questions; // Fallback
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
