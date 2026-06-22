@@ -11,7 +11,8 @@ const route = useRoute();
 const router = useRouter();
 
 const roomCode = (route.query.room as string || '').toUpperCase();
-const pseudo = localStorage.getItem('pseudo') || 'Anonyme';
+const rawPseudo = localStorage.getItem('pseudo');
+const pseudo = rawPseudo || 'Anonyme';
 
 // Local Player ID
 let myId: string = localStorage.getItem('playerId') || '';
@@ -49,6 +50,11 @@ const handleDisconnect = () => {
 onMounted(async () => {
   if (!roomCode) {
     router.push({ name: 'home' });
+    return;
+  }
+  
+  if (!rawPseudo) {
+    router.push({ name: 'home', query: { room: roomCode } });
     return;
   }
 
